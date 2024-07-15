@@ -43,25 +43,25 @@ function init_and_seed_i2b2_databse() {
         echo -e "Creating i2b2 database and users ..."
         eval "${PSQL} -v ON_ERROR_STOP=1 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/database/i2b2_postgres_init.sql" >/dev/null
         echo -e "Seeding i2b2 database ..."
-        eval "${PSQL} -d i2b2 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/database/i2b2_db.sql" >/dev/null
+        eval "${PSQL} ON_ERROR_STOP=1 -d i2b2 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/database/i2b2_db.sql" >/dev/null
     else
         echo -e "i2b2 database already exists. Skipping ..."
     fi
 }
 
-function disable_psql_updates() {
-    # stop updates for postgresql-12. Keep this method until new cda-importer is finished
-    if grep -q "Package: postgresql-12" /etc/apt/preferences.d/official-package-repositories.pref; then
-        echo -e "Unattendend-upgrades for postgresql-12 already disabled"
-    else
-        echo -e "Disabling postgresql-12 unattendend-upgrades ..."
-        cat <<EOF >>"/etc/apt/preferences.d/official-package-repositories.pref"
-Package: postgresql-12 postgresql-client-12 postgresql-common postgresql-client-common
-Pin: release o=Ubuntu
-Pin-Priority: -1
-EOF
-    fi
-}
+#function disable_psql_updates() {
+#    # stop updates for postgresql-12. Keep this method until new cda-importer is finished
+#    if grep -q "Package: postgresql-12" /etc/apt/preferences.d/official-package-repositories.pref; then
+#        echo -e "Unattendend-upgrades for postgresql-12 already disabled"
+#    else
+#        echo -e "Disabling postgresql-12 unattendend-upgrades ..."
+#        cat <<EOF >>"/etc/apt/preferences.d/official-package-repositories.pref"
+#Package: postgresql-12 postgresql-client-12 postgresql-common postgresql-client-common
+#Pin: release o=Ubuntu
+#Pin-Priority: -1
+#EOF
+#    fi
+#}
 
 function set_wildfly_service_dependency() {
     # workaround for insufficient connection handling of wildfly datasources. Replace as soon as possible.
@@ -87,6 +87,13 @@ function create_wildfly_user() {
     chown wildfly:wildfly /opt/wildfly/standalone/deployments/*
 }
 
+function remove_i2b2_config_data() {
+  readonly i2b2_config_data_path="/var/www/html/webclient/i2b2_config_data.js"
+    if [ -f "${i2b2_config_data_path}" ]; then
+      rm $i2b2_config_data_path
+    fi
+}
+
 function main() {
     set -euo pipefail
     case "${OPERATION}" in
@@ -96,7 +103,7 @@ function main() {
         connect_to_psql
         wait_for_psql_connection
         init_and_seed_i2b2_databse
-        disable_psql_updates
+#        disable_psql_updates
         systemctl enable postgresql
         set_wildfly_service_dependency
         deploy_datasources
@@ -110,6 +117,8 @@ function main() {
         systemctl start wildfly || true
         systemctl daemon-reload
         ;;
+    upgrade)
+        remove_i2b2_config_data
     esac
 }
 

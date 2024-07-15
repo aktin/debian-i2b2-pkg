@@ -5,7 +5,7 @@
     <datasource jta="false" jndi-name="java:/PMBootStrapDS" pool-name="PMBootStrapDS" enabled="true" use-ccm="false">
         <connection-url>jdbc:postgresql://__HOST__:__PORT__/i2b2?searchPath=i2b2pm</connection-url>
         <driver-class>org.postgresql.Driver</driver-class>
-        <driver>postgresql-42.2.8.jar</driver>
+        <driver>postgresql-42.7.3.jar</driver>
         <security>
             <user-name>i2b2pm</user-name>
             <password>demouser</password>

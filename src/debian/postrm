@@ -24,7 +24,7 @@ function delete_wildfly_remnants() {
 function delete_wildfly_user() {
     echo -e "Deleting wildfly user..."
     if id -u wildfly &>/dev/null; then
-        deluser --remove-home --force wildfly
+        deluser --remove-home wildfly
     else
         echo -e "User wildfly is already deleted"
     fi

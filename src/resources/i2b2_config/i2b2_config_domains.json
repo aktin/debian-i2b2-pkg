@@ -1,0 +1,13 @@
+{
+  "urlProxy": "proxy.php",
+  "urlFramework": "js-i2b2/",
+  "lstDomains": [
+    {
+      "domain": "i2b2demo",
+      "name": "AKTIN",
+      "urlCellPM": "http://127.0.0.1:9090/i2b2/services/PMService/",
+      "allowAnalysis": true,
+      "debug": false
+    }
+  ]
+}
