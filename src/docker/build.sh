@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
+readonly PACKAGE="aktin-notaufnahme-i2b2"
+
 if [ -z "${VERSION+x}" ]; then
     readonly VERSION="${1:-}"
     if [ -z "${VERSION}" ]; then
@@ -11,6 +13,7 @@ fi
 
 # Optional parameter
 readonly FULL="${2:-}"
+
 
 readonly DIR_CURRENT="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 readonly DIR_BUILD="${DIR_CURRENT}/build"
@@ -29,10 +32,12 @@ function prepare_wildfly_docker() {
     mkdir -p "${DIR_BUILD}/wildfly"
     sed -e "s/__VWILDFLY__/${VERSION_WILDFLY}/g" "${DIR_CURRENT}/wildfly/Dockerfile" >"${DIR_BUILD}/wildfly/Dockerfile"
     cp "${DIR_CURRENT}/wildfly/entrypoint.sh" "${DIR_BUILD}/wildfly/"
-    cp "${DIR_RESOURCES}/standalone.xml.patch" "${DIR_BUILD}/wildfly/"
+#    cp "${DIR_RESOURCES}/standalone.xml.patch" "${DIR_BUILD}/wildfly/"
+    cp "${DIR_RESOURCES}/wildfly_cli/config.cli" "${DIR_BUILD}/wildfly/"
+    chmod +x "${DIR_BUILD}/wildfly/entrypoint.sh"
     download_wildfly_jdbc "/wildfly"
     download_wildfly_i2b2 "/wildfly"
-    copy_datasource_for_postinstall "/wildfly/ds"
+#    copy_datasource_for_postinstall "/wildfly/ds"
 }
 
 function prepare_postgresql_docker() {
@@ -68,7 +73,7 @@ function clean_up_old_docker_images() {
 function build_docker_images() {
     cwd="$(pwd)"
     cd "${DIR_CURRENT}"
-    docker-compose build
+    docker compose build
     cd "${cwd}"
 }
 
@@ -86,3 +91,5 @@ main() {
 }
 
 main
+
+echo "${FULL}"

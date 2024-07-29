@@ -18,7 +18,7 @@ fi
 # Superdirectory this script is located in + /resources, namely src/resources
 readonly DIR_RESOURCES="$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" &>/dev/null && pwd)/resources"
 
-readonly DIR_DOWNLOADS="./downloads"
+readonly DIR_DOWNLOADS="../downloads"
 
 function init_build_environment() {
     set -a
@@ -52,7 +52,7 @@ function download_i2b2_webclient() {
 function config_i2b2_webclient() {
     local DIR_WEBCLIENT="${1}"
 
-    cp ${DIR_RESOURCES}/i2b2_config/i2b2_config_domains.json ${DIR_BUILD}${DIR_WEBCLIENT}/i2b2_config_domains.json
+    cp ${DIR_RESOURCES}/i2b2_config/* ${DIR_BUILD}${DIR_WEBCLIENT}/
 
     sed -i "s|loginDefaultUsername : \"demo\"|loginDefaultUsername : \"\"|" "${DIR_BUILD}${DIR_WEBCLIENT}/js-i2b2/i2b2_ui_config.js"
     sed -i "s|loginDefaultPassword : \"demouser\"|loginDefaultPassword : \"\"|" "${DIR_BUILD}${DIR_WEBCLIENT}/js-i2b2/i2b2_ui_config.js"
@@ -81,7 +81,7 @@ function init_wildfly_systemd() {
     cp "${DIR_BUILD}${DIR_WILDFLY_HOME}/docs/contrib/scripts/systemd/wildfly.service" "${DIR_BUILD}${DIR_SYSTEMD}/"
     cp "${DIR_BUILD}${DIR_WILDFLY_HOME}/docs/contrib/scripts/systemd/wildfly.conf" "${DIR_BUILD}${DIR_WILDFLY_CONFIG}/"
 
-    echo "JBOSS_HOME=\"${DIR_WILDFLY_HOME}\"" >>"${DIR_BUILD}${DIR_WILDFLY_CONFIG}/wildfly.conf"
+    echo "WILDFLY_HOME=\"${DIR_WILDFLY_HOME}\"" >>"${DIR_BUILD}${DIR_WILDFLY_CONFIG}/wildfly.conf"
 
     cp "${DIR_BUILD}${DIR_WILDFLY_HOME}/docs/contrib/scripts/systemd/launch.sh" "${DIR_BUILD}${DIR_WILDFLY_HOME}/bin/"
 }
@@ -96,7 +96,8 @@ function config_wildfly() {
     # fix CVE-2021-44228 (log4j2 vulnerability)
     echo "JAVA_OPTS=\"\$JAVA_OPTS -Dlog4j2.formatMsgNoLookups=true\"" >>"${DIR_BUILD}${DIR_WILDFLY_HOME}/bin/standalone.conf"
 
-    patch -p1 -d "${DIR_BUILD}${DIR_WILDFLY_HOME}" <"${DIR_RESOURCES}/standalone.xml.patch"
+    #patch -p1 -d "${DIR_BUILD}${DIR_WILDFLY_HOME}" <"${DIR_RESOURCES}/standalone.xml.patch"
+   "${DIR_BUILD}${DIR_WILDFLY_HOME}/bin/jboss-cli.sh" --file="${DIR_RESOURCES}/wildfly_cli/config.cli"
 }
 
 function download_wildfly_jdbc() {

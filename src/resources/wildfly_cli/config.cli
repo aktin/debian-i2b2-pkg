@@ -1,0 +1,63 @@
+# Start embed server for offline standalone.xml manipulation
+embed-server
+
+# logging
+/system-property=jboss.as.management.blocking.timeout:add(value=900)
+/subsystem=logging/size-rotating-file-handler=srf:add( \
+    file={"relative-to"=>"jboss.server.log.dir", "path"=>"server.log"}, \
+    rotate-size="1g", \
+    max-backup-index=64, \
+    append=true, \
+    autoflush=true, \
+    rotate-on-boot=true, \
+    named-formatter=PATTERN)
+/subsystem=logging/root-logger=ROOT:add-handler(name="srf")
+
+# deployment
+/subsystem=deployment-scanner/scanner=default:write-attribute(name="deployment-timeout", value="900")
+
+# undertow
+/subsystem=undertow/server=default-server/http-listener=default:write-attribute(name="max-post-size", value="1073741824")
+/subsystem=undertow/server=default-server/https-listener=https:write-attribute(name="max-post-size", value="1073741824")
+
+# socket binding
+/socket-binding-group=standard-sockets/socket-binding=http:write-attribute(name=port, value="${jboss.http.port:9090}")
+
+# datasources
+
+# Add datasources
+# PM ds
+data-source add --name=PMBootStrapDS --jndi-name=java:/PMBootStrapDS --driver-name=postgresql-42.7.3.jar --driver-class=org.postgresql.Driver --connection-url=jdbc:postgresql://${env.DB_HOST:localhost}:${env.DB_PORT:5432}/i2b2?searchPath=i2b2pm --user-name=i2b2pm --password=demouser --jta=false --use-ccm=false
+
+# crc ds
+data-source add --name=CRCBootStrapDS --jndi-name=java:/CRCBootStrapDS --driver-name=postgresql-42.7.3.jar --driver-class=org.postgresql.Driver --connection-url=jdbc:postgresql://${env.DB_HOST:localhost}:${env.DB_PORT:5432}/i2b2?searchPath=i2b2hive --user-name=i2b2hive --password=demouser --jta=false --use-ccm=false
+data-source add --name=QueryToolDemoDS --jndi-name=java:/QueryToolDemoDS --driver-name=postgresql-42.7.3.jar --driver-class=org.postgresql.Driver --connection-url=jdbc:postgresql://${env.DB_HOST:localhost}:${env.DB_PORT:5432}/i2b2?searchPath=i2b2crcdata --user-name=i2b2crcdata --password=demouser --jta=false --use-ccm=false
+
+# im ds
+data-source add --name=IMBootStrapDS --jndi-name=java:/IMBootStrapDS --driver-name=postgresql-42.7.3.jar --driver-class=org.postgresql.Driver --connection-url=jdbc:postgresql://${env.DB_HOST:localhost}:${env.DB_PORT:5432}/i2b2?searchPath=i2b2hive --user-name=i2b2hive --password=demouser --jta=false --use-ccm=false
+data-source add --name=IMDemoDS --jndi-name=java:/IMDemoDS --driver-name=postgresql-42.7.3.jar --driver-class=org.postgresql.Driver --connection-url=jdbc:postgresql://${env.DB_HOST:localhost}:${env.DB_PORT:5432}/i2b2?searchPath=i2b2imdata --user-name=i2b2imdata --password=demouser --jta=false --use-ccm=false
+
+# ont ds
+data-source add --name=OntologyBootStrapDS --jndi-name=java:/OntologyBootStrapDS --driver-name=postgresql-42.7.3.jar --driver-class=org.postgresql.Driver --connection-url=jdbc:postgresql://${env.DB_HOST:localhost}:${env.DB_PORT:5432}/i2b2?searchPath=i2b2hive --user-name=i2b2hive --password=demouser --jta=false --use-ccm=false
+data-source add --name=OntologyDemoDS --jndi-name=java:/OntologyDemoDS --driver-name=postgresql-42.7.3.jar --driver-class=org.postgresql.Driver --connection-url=jdbc:postgresql://${env.DB_HOST:localhost}:${env.DB_PORT:5432}/i2b2?searchPath=i2b2metadata --user-name=i2b2metadata --password=demouser --jta=false --use-ccm=false
+
+# work ds
+data-source add --name=WorkplaceBootStrapDS --jndi-name=java:/WorkplaceBootStrapDS --driver-name=postgresql-42.7.3.jar --driver-class=org.postgresql.Driver --connection-url=jdbc:postgresql://${env.DB_HOST:localhost}:${env.DB_PORT:5432}/i2b2?searchPath=i2b2hive --user-name=i2b2hive --password=demouser --jta=false --use-ccm=false
+data-source add --name=WorkplaceDemoDS --jndi-name=java:/WorkplaceDemoDS --driver-name=postgresql-42.7.3.jar --driver-class=org.postgresql.Driver --connection-url=jdbc:postgresql://${env.DB_HOST:localhost}:${env.DB_PORT:5432}/i2b2?searchPath=i2b2metadata --user-name=i2b2metadata --password=demouser --jta=false --use-ccm=false
+
+# Configure the validation settings for datasources
+for dataSource in /subsystem=datasources:read-children-names(child-type=data-source)
+    /subsystem=datasources/data-source=$dataSource:write-attribute(name=validate-on-match,value=false)
+    /subsystem=datasources/data-source=$dataSource:write-attribute(name=background-validation,value=true)
+    /subsystem=datasources/data-source=$dataSource:write-attribute(name=background-validation-millis,value=60000)
+    /subsystem=datasources/data-source=$dataSource:write-attribute(name=use-fast-fail,value=true)
+    /subsystem=datasources/data-source=$dataSource:write-attribute(name=check-valid-connection-sql,value="SELECT 1")
+
+    # Configure the statement settings
+    /subsystem=datasources/data-source=$dataSource:write-attribute(name=share-prepared-statements,value=false)
+done
+
+/subsystem=undertow/configuration=filter/custom-filter=request-logging-filter:add(class-name=io.undertow.server.handlers.RequestDumpingHandler, module=io.undertow.core)
+/subsystem=undertow/server=default-server/host=default-host/filter-ref=request-logging-filter:add
+
+stop-embedded-server

@@ -1,6 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
+
 readonly VERSION="${1:-}"
 if [ -z "${VERSION}" ]; then
     echo "\$VERSION is empty."
