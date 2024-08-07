@@ -30,27 +30,27 @@ function load_docker_environment_variables() {
 
 function prepare_wildfly_docker() {
     mkdir -p "${DIR_BUILD}/wildfly"
-    sed -e "s/__VWILDFLY__/${VERSION_WILDFLY}/g" "${DIR_CURRENT}/wildfly/Dockerfile" >"${DIR_BUILD}/wildfly/Dockerfile"
-    cp "${DIR_CURRENT}/wildfly/entrypoint.sh" "${DIR_BUILD}/wildfly/"
-#    cp "${DIR_RESOURCES}/standalone.xml.patch" "${DIR_BUILD}/wildfly/"
+    cp -r "${DIR_CURRENT}/wildfly" "${DIR_BUILD}/"
     cp "${DIR_RESOURCES}/wildfly_cli/config.cli" "${DIR_BUILD}/wildfly/"
     chmod +x "${DIR_BUILD}/wildfly/entrypoint.sh"
+
+    download_wildfly "/wildfly"
     download_wildfly_jdbc "/wildfly"
     download_wildfly_i2b2 "/wildfly"
-#    copy_datasource_for_postinstall "/wildfly/ds"
 }
 
 function prepare_postgresql_docker() {
     mkdir -p "${DIR_BUILD}/database"
     cp "${DIR_CURRENT}/database/Dockerfile" "${DIR_BUILD}/database/"
     copy_database_for_postinstall "/database/sql"
+    cp "${DIR_CURRENT}/database/sql/update_wildfly_host.sql" "${DIR_BUILD}/database/sql/i2b2_update_wildfly_host.sql"
 }
 
 function prepare_apache2_docker() {
     mkdir -p "${DIR_BUILD}/httpd"
     cp "${DIR_CURRENT}/httpd/Dockerfile" "${DIR_BUILD}/httpd/"
     download_i2b2_webclient "/httpd/i2b2webclient"
-    config_i2b2_webclient "/httpd/i2b2webclient"
+    config_i2b2_webclient "/httpd/i2b2webclient" "wildfly"
 }
 
 function clean_up_old_docker_images() {

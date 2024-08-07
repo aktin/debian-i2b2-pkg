@@ -26,8 +26,7 @@ Update: 05-03-17 (nw096):
 	- the automatic detection of $WHITELIST URLs from i2b2_config_data.js now supports ports (bug fix)
 
 */
-
-$wildflyHost = $_SERVER["WILDFLY_HOST"] ?? "localhost";
+$wildflyHost = "__WILDFLY_HOST__";
 
 $pmURL = "http://$wildflyHost:8080/i2b2/rest/PMService/getServices";
 $pmCheckAllRequests = false;
@@ -49,8 +48,7 @@ $WHITELIST = array(
 
 $BLACKLIST = array(
     "http://127.0.0.1:9090/test",
-    "http://localhost:9090/test",
-    "http://$wildflyHost:9090/test"
+    "http://localhost:9090/test"
 );
 
 
@@ -243,6 +241,6 @@ if ($PostBody=="") {
 
     // perform any analysis or processing on the returned result here
     header("Content-Type: text/xml", true);
-    print($proxyResult . $wildflyHost);
+    print($proxyResult);
 }
 

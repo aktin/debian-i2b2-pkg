@@ -51,11 +51,15 @@ function download_i2b2_webclient() {
 
 function config_i2b2_webclient() {
     local DIR_WEBCLIENT="${1}"
+    local WILDFLY_HOST="${2}"
 
     cp ${DIR_RESOURCES}/i2b2_config/* ${DIR_BUILD}${DIR_WEBCLIENT}/
 
     sed -i "s|loginDefaultUsername : \"demo\"|loginDefaultUsername : \"\"|" "${DIR_BUILD}${DIR_WEBCLIENT}/js-i2b2/i2b2_ui_config.js"
     sed -i "s|loginDefaultPassword : \"demouser\"|loginDefaultPassword : \"\"|" "${DIR_BUILD}${DIR_WEBCLIENT}/js-i2b2/i2b2_ui_config.js"
+
+    sed -i "s|__WILDFLY_HOST__|${WILDFLY_HOST}|" "${DIR_BUILD}${DIR_WEBCLIENT}/proxy.php"
+    sed -i "s|__WILDFLY_HOST__|${WILDFLY_HOST}|" "${DIR_BUILD}${DIR_WEBCLIENT}/i2b2_config_domains.json"
 }
 
 function download_wildfly() {
@@ -96,7 +100,6 @@ function config_wildfly() {
     # fix CVE-2021-44228 (log4j2 vulnerability)
     echo "JAVA_OPTS=\"\$JAVA_OPTS -Dlog4j2.formatMsgNoLookups=true\"" >>"${DIR_BUILD}${DIR_WILDFLY_HOME}/bin/standalone.conf"
 
-    #patch -p1 -d "${DIR_BUILD}${DIR_WILDFLY_HOME}" <"${DIR_RESOURCES}/standalone.xml.patch"
    "${DIR_BUILD}${DIR_WILDFLY_HOME}/bin/jboss-cli.sh" --file="${DIR_RESOURCES}/wildfly_cli/config.cli"
 }
 

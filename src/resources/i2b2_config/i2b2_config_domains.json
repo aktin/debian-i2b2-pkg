@@ -5,14 +5,7 @@
     {
       "domain": "i2b2demo",
       "name": "AKTIN",
-      "urlCellPM": "http://wildfly:9090/i2b2/services/PMService/",
-      "allowAnalysis": true,
-      "debug": false
-    },
-    {
-      "domain": "i2b2demo",
-      "name": "AKTIN",
-      "urlCellPM": "http://localhost:9090/i2b2/services/PMService/",
+      "urlCellPM": "http://__WILDFLY_HOST__:9090/i2b2/services/PMService/",
       "allowAnalysis": true,
       "debug": false
     }

@@ -1,25 +1,27 @@
-FROM quay.io/wildfly/wildfly:__VWILDFLY__
+FROM ubuntu:24.04
 
-ENV DBHOST=db
-ENV DBPORT=5432
+RUN apt update
+RUN apt install openjdk-11-jdk -y
 
-USER jboss
+COPY ./wildfly-* /opt/wildfly
 
-RUN sed -i "s/-Xms64m -Xmx512m/-Xms1024m -Xmx2g/" /opt/jboss/wildfly/bin/appclient.conf
-RUN sed -i "s/-Xms64m -Xmx512m/-Xms1024m -Xmx2g/" /opt/jboss/wildfly/bin/standalone.conf
-RUN echo "JAVA_OPTS=\"\$JAVA_OPTS -Dlog4j2.formatMsgNoLookups=true\"" >> /opt/jboss/wildfly/bin/standalone.conf
+WORKDIR /opt/wildfly
 
-COPY ./i2b2.war /opt/jboss/wildfly/standalone/deployments/
-COPY ./postgresql-*.jar /opt/jboss/wildfly/standalone/deployments/
+RUN adduser --system --group --disabled-login --home /var/lib/wildfly wildfly
+RUN chown -R wildfly:wildfly ./standalone/configuration
+RUN chown -R wildfly:wildfly ./standalone/deployments
+RUN chown -R wildfly:wildfly .
 
-COPY ./*.cli /opt/jboss/wildfly
-RUN /opt/jboss/wildfly/bin/jboss-cli.sh --file=/opt/jboss/wildfly/config.cli
-RUN rm /opt/jboss/wildfly/*.cli
+USER wildfly
+RUN sed -i "s/-Xms64m -Xmx512m/-Xms1024m -Xmx2g/" ./bin/appclient.conf
+RUN sed -i "s/-Xms64m -Xmx512m/-Xms1024m -Xmx2g/" ./bin/standalone.conf
+RUN echo "JAVA_OPTS=\"\$JAVA_OPTS -Dlog4j2.formatMsgNoLookups=true\"" >> ./bin/standalone.conf
 
-USER root
-RUN chown -R jboss:jboss /opt/jboss/wildfly/standalone/configuration
-RUN chown -R jboss:jboss /opt/jboss/wildfly/standalone/deployments
-USER jboss
+COPY ./i2b2.war standalone/deployments/
+COPY ./postgresql-*.jar standalone/deployments/
 
-COPY ./entrypoint.sh /
-CMD ["/entrypoint.sh"]
+COPY ./*.cli .
+RUN ./bin/jboss-cli.sh --file=./config.cli
+RUN rm ./*.cli
+
+CMD ["/opt/wildfly/bin/standalone.sh", "-b", "0.0.0.0"]
