@@ -6,6 +6,8 @@ services:
     environment:
       DB_HOST: db
       DB_PORT: 5432
+    ports:
+      - "9990:9990"
     networks:
       - aktin-network
   notaufnahme-i2b2-database:
@@ -23,9 +25,7 @@ services:
     image: ghcr.io/aktin/notaufnahme-i2b2-httpd
     hostname: httpd
     ports:
-      - "90:80"
-    environment:
-      WILDFLY_HOST: wildfly
+      - "80:80"
     networks:
       - aktin-network
 networks:
