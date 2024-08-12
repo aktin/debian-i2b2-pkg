@@ -32,7 +32,6 @@ function prepare_wildfly_docker() {
     mkdir -p "${DIR_BUILD}/wildfly"
     cp -r "${DIR_CURRENT}/wildfly" "${DIR_BUILD}/"
     cp "${DIR_RESOURCES}/wildfly_cli/config.cli" "${DIR_BUILD}/wildfly/"
-    chmod +x "${DIR_BUILD}/wildfly/entrypoint.sh"
 
     download_wildfly "/wildfly"
     download_wildfly_jdbc "/wildfly"
