@@ -118,7 +118,7 @@ function download_wildfly_i2b2() {
     local DIR_WILDFLY_DEPLOYMENTS="${1}"
 
     if [ ! -f "${DIR_DOWNLOADS}/i2b2core-upgrade-${VERSION_I2B2}.zip" ]; then
-      echo "i2b2core-upgrade-${VERSION_I2B2}.zip not found. Please download i2b2core-upgrade-${VERSION_I2B2}.zip from https://www.i2b2.org/software/index.html and move it to ${DIR_DOWNLOADS}."
+      echo "i2b2core-upgrade-${VERSION_I2B2}.zip not found. Please download i2b2core-upgrade-${VERSION_I2B2}.zip from https://www.i2b2.org/software/index.html and move it to ${DIR_DOWNLOADS}. Afterwards re-run build."
       exit 1
     fi
 
