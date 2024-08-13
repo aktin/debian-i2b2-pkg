@@ -43,7 +43,7 @@ function init_and_seed_i2b2_databse() {
         echo -e "Creating i2b2 database and users ..."
         eval "${PSQL} -v ON_ERROR_STOP=1 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/database/i2b2_postgres_init.sql" >/dev/null
         echo -e "Seeding i2b2 database ..."
-        eval "${PSQL} ON_ERROR_STOP=1 -d i2b2 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/database/i2b2_db.sql" >/dev/null
+        eval "${PSQL} -v ON_ERROR_STOP=1 -d i2b2 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/database/i2b2_db.sql" >/dev/null
     else
         echo -e "i2b2 database already exists. Skipping ..."
     fi
