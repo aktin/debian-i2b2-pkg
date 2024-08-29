@@ -57,7 +57,4 @@ for dataSource in /subsystem=datasources:read-children-names(child-type=data-sou
     /subsystem=datasources/data-source=$dataSource:write-attribute(name=share-prepared-statements,value=false)
 done
 
-/subsystem=undertow/configuration=filter/custom-filter=request-logging-filter:add(class-name=io.undertow.server.handlers.RequestDumpingHandler, module=io.undertow.core)
-/subsystem=undertow/server=default-server/host=default-host/filter-ref=request-logging-filter:add
-
 stop-embedded-server
