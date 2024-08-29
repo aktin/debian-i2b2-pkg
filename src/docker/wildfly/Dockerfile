@@ -24,4 +24,6 @@ COPY ./*.cli .
 RUN ./bin/jboss-cli.sh --file=./config.cli
 RUN rm ./*.cli
 
+RUN rm -rf ./standalone/configuration/standalone_xml_history/current/*
+
 CMD ["/opt/wildfly/bin/standalone.sh", "-b", "0.0.0.0"]
