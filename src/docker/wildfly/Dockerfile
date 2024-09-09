@@ -18,7 +18,7 @@ RUN sed -i "s/-Xms64m -Xmx512m/-Xms1024m -Xmx2g/" ./bin/standalone.conf
 RUN echo "JAVA_OPTS=\"\$JAVA_OPTS -Dlog4j2.formatMsgNoLookups=true\"" >> ./bin/standalone.conf
 
 COPY ./i2b2.war standalone/deployments/
-COPY ./postgresql-*.jar standalone/deployments/
+COPY ./*.jar standalone/deployments/
 
 COPY ./*.cli .
 RUN ./bin/jboss-cli.sh --file=./config.cli

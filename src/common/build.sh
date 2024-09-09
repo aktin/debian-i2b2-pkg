@@ -122,7 +122,7 @@ function download_wildfly_i2b2() {
       exit 1
     fi
 
-    unzip -j "${DIR_DOWNLOADS}/i2b2core-upgrade-${VERSION_I2B2}.zip" "i2b2/deployments/i2b2.war" \
+    unzip -j "${DIR_DOWNLOADS}/i2b2core-upgrade-${VERSION_I2B2}.zip" "i2b2/deployments/*" \
           -d "${DIR_BUILD}${DIR_WILDFLY_DEPLOYMENTS}"
 
 }
