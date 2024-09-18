@@ -58,6 +58,8 @@ function config_i2b2_webclient() {
     sed -i "s|loginDefaultUsername : \"demo\"|loginDefaultUsername : \"\"|" "${DIR_BUILD}${DIR_WEBCLIENT}/js-i2b2/i2b2_ui_config.js"
     sed -i "s|loginDefaultPassword : \"demouser\"|loginDefaultPassword : \"\"|" "${DIR_BUILD}${DIR_WEBCLIENT}/js-i2b2/i2b2_ui_config.js"
 
+    sed -i "s|<div class=\"classic\">For classic i2b2 webclient click <a href=\"#\">here</a></div>||" "${DIR_BUILD}${DIR_WEBCLIENT}/js-i2b2/cells/PM/assets/login.html"
+
     sed -i "s|__WILDFLY_HOST__|${WILDFLY_HOST}|" "${DIR_BUILD}${DIR_WEBCLIENT}/proxy.php"
     sed -i "s|__WILDFLY_HOST__|${WILDFLY_HOST}|" "${DIR_BUILD}${DIR_WEBCLIENT}/i2b2_config_domains.json"
 }
