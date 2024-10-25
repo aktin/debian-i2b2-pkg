@@ -46,7 +46,7 @@ prepare_management_scripts_and_files() {
   mkdir -p "${DIR_BUILD}/DEBIAN"
 
   # Replace placeholders in the control file
-  sed -e "s/__PACKAGE__/${PACKAGE}/g" -e "s/__VERSION__/${VERSION}/g" "${DIR_CURRENT}/control" > "${DIR_BUILD}/DEBIAN/control"
+  sed -e "s/__PACKAGE__/${PACKAGE}/g" -e "s/__VERSION__/${VERSION}/g" -e "s/__POSTGRESQL_VERSION__/${VERSION_POSTGRESQL}/g" "${DIR_CURRENT}/control" > "${DIR_BUILD}/DEBIAN/control"
 
   # Copy necessary scripts
   cp "${DIR_CURRENT}/config" "${DIR_BUILD}/DEBIAN/"

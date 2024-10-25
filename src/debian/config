@@ -2,7 +2,7 @@
 #--------------------------------------
 # Script Name:  config
 # Version:      1.0
-# Author:       skurka@ukaachen.de, akombeiz@ukaachen.de
+# Author:       skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
 # Date:         25 Oct 24
 # Purpose:      Debconf configuration script that prompts for database connection settings for 'aktin-notaufnahme-i2b2'.
 #--------------------------------------
@@ -10,7 +10,7 @@
 # Exit on error
 set -e
 
-# Source debconf library.
+# Source debconf library
 . /usr/share/debconf/confmodule
 
 # Ask user how they want to connect to the database
