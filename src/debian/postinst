@@ -96,6 +96,7 @@ main() {
       systemctl daemon-reload
       ;;
     upgrade)
+      #TODO Will never be called
       remove_i2b2_config_data
       ;;
   esac
