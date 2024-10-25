@@ -115,7 +115,15 @@ function config_wildfly() {
     # Fix CVE-2021-44228 (log4j2 vulnerability)
     echo 'JAVA_OPTS="$JAVA_OPTS -Dlog4j2.formatMsgNoLookups=true"' >>"${DIR_BUILD}${dir_wildfly_home}/bin/standalone.conf"
 
-    "${DIR_BUILD}${dir_wildfly_home}/bin/jboss-cli.sh" --file="${DIR_RESOURCES}/wildfly_cli/config.cli"
+    # Prepare the config.cli file
+    local config_cli_template="${DIR_RESOURCES}/wildfly_cli/config.cli"
+    local config_cli_processed="${DIR_BUILD}${dir_wildfly_home}/bin/i2b2_config.cli"
+
+    # Replace the placeholder in the config.cli file
+    sed "s/__POSTGRES_JDBC_VERSION__/${VERSION_POSTGRES_JDBC}/g" "${config_cli_template}" > "${config_cli_processed}"
+
+    # Run the JBoss CLI with the processed config.cli file
+    "${DIR_BUILD}${dir_wildfly_home}/bin/jboss-cli.sh" --file="${config_cli_processed}"
 }
 
 function download_wildfly_jdbc() {
