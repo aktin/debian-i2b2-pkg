@@ -8,15 +8,14 @@ embed-server
 # Add a size-rotating file handler named 'srf' that writes to 'server.log',
 # rotates the log when it reaches 1GB, keeps up to 64 backup files,
 # appends to existing logs, auto-flushes, rotates on boot, and uses the 'PATTERN' formatter
-/subsystem=logging/size-rotating-file-handler=srf:add(
-    file={"relative-to"=>"jboss.server.log.dir", "path"=>"server.log"},
-    rotate-size="1g",
-    max-backup-index=64,
-    append=true,
-    autoflush=true,
-    rotate-on-boot=true,
-    named-formatter=PATTERN
-)
+/subsystem=logging/size-rotating-file-handler=srf:add( \
+    file={"relative-to"=>"jboss.server.log.dir", "path"=>"server.log"}, \
+    rotate-size="1g", \
+    max-backup-index=64, \
+    append=true, \
+    autoflush=true, \
+    rotate-on-boot=true, \
+    named-formatter=PATTERN)
 
 # Add the 'srf' handler to the root logger so all log messages are handled by 'srf'
 /subsystem=logging/root-logger=ROOT:add-handler(name="srf")

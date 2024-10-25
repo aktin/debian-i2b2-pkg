@@ -153,13 +153,6 @@ function copy_database_for_postinstall() {
   cp -r "${DIR_RESOURCES}/database" "${DIR_BUILD}${dir_db_postinstall}"
 }
 
-function copy_datasource_for_postinstall() {
-  local dir_ds_postinstall="${1}"
-
-  mkdir -p "$(dirname "${DIR_BUILD}${dir_ds_postinstall}")"
-  cp -r "${DIR_RESOURCES}/datasource" "${DIR_BUILD}${dir_ds_postinstall}"
-}
-
 function copy_helper_functions_for_postinstall() {
   local dir_helper_postinstall="${1}"
 
