@@ -1,20 +1,26 @@
 #!/bin/bash
-set -euo pipefail
+#--------------------------------------
+# Script Name:  postinst
+# Version:      1.0
+# Author:       skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
+# Date:         25 Oct 24
+# Purpose:      Post-installation script that configures services, initializes databases,
+#               and sets up necessary users and permissions for the 'aktin-notaufnahme-i2b2' package.
+#--------------------------------------
 
-readonly RES="\e[0m"
-readonly BRED="\e[1;31m"
+set -euo pipefail
 
 readonly OPERATION="${1}"
 
-function activate_php_curl_extension() {
-    if [[ -n $(grep ";extension=curl" /etc/php/*/apache2/php.ini) ]]; then
-        echo -e "Enabling apache2 php-curl extension ..."
-        sed -i "s/;extension=curl/extension=curl/" /etc/php/*/apache2/php.ini
-    else
-        echo -e "apache2 php-curl extension already enabled."
-    fi
+activate_php_curl_extension() {
+  if grep -q ";extension=curl" /etc/php/*/apache2/php.ini; then
+    echo "Enabling apache2 php-curl extension ..."
+    sed -i "s/;extension=curl/extension=curl/" /etc/php/*/apache2/php.ini
     echo "Restarting apache2 ..."
     systemctl restart apache2
+  else
+    echo "apache2 php-curl extension already enabled."
+  fi
 }
 
 connect_to_psql() {
@@ -22,51 +28,37 @@ connect_to_psql() {
   readonly PSQL="sudo -u postgres psql"
 }
 
-function wait_for_psql_connection() {
-    local WAITCOUNT=0
-    while ! systemctl start postgresql 2>/dev/null; do
-        if [ ${WAITCOUNT} -lt 12 ]; then
-            echo -e "${BRED}Database not yet installed. Waiting ...${RES}"
-            ((WAITCOUNT++))
-            sleep 5
-        else
-            echo -e "${BRED}Database not yet installed. Aborting ...${RES}"
-            exit 1
-        fi
-    done
-}
-
-function init_and_seed_i2b2_databse() {
-    if [[ $(eval "${PSQL} -l" | grep "i2b2" | wc -l) == 0 ]]; then
-        echo -e "Creating i2b2 database and users ..."
-        eval "${PSQL} -v ON_ERROR_STOP=1 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/database/i2b2_postgres_init.sql" >/dev/null
-        echo -e "Seeding i2b2 database ..."
-        eval "${PSQL} -v ON_ERROR_STOP=1 -d i2b2 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/database/i2b2_db.sql" >/dev/null
+wait_for_psql_connection() {
+  local waitcount=0
+  while ! systemctl start postgresql 2>/dev/null; do
+    if [ "$waitcount" -lt 12 ]; then
+      echo "Database not yet installed. Waiting ..."
+      waitcount=$((waitcount + 1))
+      sleep 5
     else
-        echo -e "i2b2 database already exists. Skipping ..."
+      echo "Database not yet installed. Aborting ..."
+      exit 1
     fi
+  done
 }
 
-#function disable_psql_updates() {
-#    # stop updates for postgresql-12. Keep this method until new cda-importer is finished
-#    if grep -q "Package: postgresql-12" /etc/apt/preferences.d/official-package-repositories.pref; then
-#        echo -e "Unattendend-upgrades for postgresql-12 already disabled"
-#    else
-#        echo -e "Disabling postgresql-12 unattendend-upgrades ..."
-#        cat <<EOF >>"/etc/apt/preferences.d/official-package-repositories.pref"
-#Package: postgresql-12 postgresql-client-12 postgresql-common postgresql-client-common
-#Pin: release o=Ubuntu
-#Pin-Priority: -1
-#EOF
-#    fi
-#}
+init_and_seed_i2b2_database() {
+  if [[ $(eval "${PSQL} -l" | grep "i2b2" | wc -l) == 0 ]]; then
+    echo "Creating i2b2 database and users ..."
+    eval "${PSQL} -v ON_ERROR_STOP=1 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/database/i2b2_postgres_init.sql" >/dev/null
+    echo "Seeding i2b2 database ..."
+    eval "${PSQL} -v ON_ERROR_STOP=1 -d i2b2 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/database/i2b2_db.sql" >/dev/null
+  else
+    echo "i2b2 database already exists. Skipping ..."
+  fi
+}
 
-function set_wildfly_service_dependency() {
-    # workaround for insufficient connection handling of wildfly datasources. Replace as soon as possible.
-    echo -e "Setting up service dependency between postgresql and wildfly ..."
-    . "/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/helper.sh"
-    add_entry_to_service "wildfly.service" "Requires" "postgresql.service"
-    add_entry_to_service "wildfly.service" "After" "postgresql.service"
+set_wildfly_service_dependency() {
+  # Workaround for insufficient connection handling of WildFly datasources. Replace as soon as possible.
+  echo "Setting up service dependency between postgresql and wildfly ..."
+  . "/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/helper.sh"
+  add_entry_to_service "wildfly.service" "Requires" "postgresql.service"
+  add_entry_to_service "wildfly.service" "After" "postgresql.service"
 }
 
 create_wildfly_user() {
@@ -76,39 +68,37 @@ create_wildfly_user() {
   chown wildfly:wildfly /opt/wildfly/standalone/deployments/*
 }
 
-function remove_i2b2_config_data() {
-  readonly i2b2_config_data_path="/var/www/html/webclient/i2b2_config_data.js"
-    if [ -f "${i2b2_config_data_path}" ]; then
-      rm $i2b2_config_data_path
-    fi
+remove_i2b2_config_data() {
+  local i2b2_config_data_path="/var/www/html/webclient/i2b2_config_data.js"
+  if [ -f "$i2b2_config_data_path" ]; then
+    rm "$i2b2_config_data_path"
+  fi
 }
 
-function main() {
-    set -euo pipefail
-    case "${OPERATION}" in
+main() {
+  case "$OPERATION" in
     configure)
-        activate_php_curl_extension
-        systemctl enable apache2
-        connect_to_psql
-        wait_for_psql_connection
-        init_and_seed_i2b2_databse
-#        disable_psql_updates
-        systemctl enable postgresql
-        set_wildfly_service_dependency
-#        deploy_datasources
-        create_wildfly_user
-        systemctl enable wildfly
-        systemctl start wildfly
-        systemctl daemon-reload
-        ;;
+      activate_php_curl_extension
+      systemctl enable apache2
+      connect_to_psql
+      wait_for_psql_connection
+      init_and_seed_i2b2_database
+      systemctl enable postgresql
+      set_wildfly_service_dependency
+      create_wildfly_user
+      systemctl enable wildfly
+      systemctl start wildfly
+      systemctl daemon-reload
+      ;;
     abort-remove)
-        systemctl enable wildfly || true
-        systemctl start wildfly || true
-        systemctl daemon-reload
-        ;;
+      systemctl enable wildfly || true
+      systemctl start wildfly || true
+      systemctl daemon-reload
+      ;;
     upgrade)
-        remove_i2b2_config_data
-    esac
+      remove_i2b2_config_data
+      ;;
+  esac
 }
 
 main
