@@ -1,26 +1,36 @@
 #!/bin/bash
+#--------------------------------------
+# Script Name:  build.sh
+# Version:      1.0
+# Author:       skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
+# Date:         25 Oct 24
+# Purpose:      Builds the Debian package for 'aktin-notaufnahme-i2b2'.
+#--------------------------------------
+
 set -euo pipefail
 
 readonly PACKAGE="aktin-notaufnahme-i2b2"
 
-if [ -z "${VERSION+x}" ]; then
-  readonly VERSION="${1:-}"
-  if [ -z "${VERSION}" ]; then
-    echo "\$VERSION is empty."
-    exit 1
-  fi
+# Determine VERSION: Use environment variable or first script argument
+VERSION="${VERSION:-${1:-}}"
+if [[ -z "${VERSION}" ]]; then
+  echo "Error: VERSION is not specified." >&2
+  echo "Usage: $0 <version>"
+  exit 1
 fi
+readonly VERSION
 
+# Get the directory where this script is located
 readonly DIR_CURRENT="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 readonly DIR_BUILD="${DIR_CURRENT}/build/${PACKAGE}_${VERSION}"
 
-function load_common_files_and_prepare_environment() {
-  . "$(dirname "${DIR_CURRENT}")/common/build.sh"
+load_common_files_and_prepare_environment() {
+  source "$(dirname "${DIR_CURRENT}")/common/build.sh"
   clean_up_build_environment
   init_build_environment
 }
 
-function prepare_package_environment() {
+prepare_package_environment() {
   download_i2b2_webclient "/var/www/html/webclient"
   config_i2b2_webclient "/var/www/html/webclient" "localhost"
   download_wildfly "/opt/wildfly"
@@ -32,16 +42,23 @@ function prepare_package_environment() {
   copy_helper_functions_for_postinstall "/usr/share/${PACKAGE}"
 }
 
-function prepare_managment_scripts_and_files() {
+prepare_management_scripts_and_files() {
   mkdir -p "${DIR_BUILD}/DEBIAN"
-  sed -e "s/__PACKAGE__/${PACKAGE}/g" -e "s/__VERSION__/${VERSION}/g" "${DIR_CURRENT}/control" >"${DIR_BUILD}/DEBIAN/control"
+
+  # Replace placeholders in the control file
+  sed -e "s/__PACKAGE__/${PACKAGE}/g" -e "s/__VERSION__/${VERSION}/g" "${DIR_CURRENT}/control" > "${DIR_BUILD}/DEBIAN/control"
+
+  # Copy necessary scripts
   cp "${DIR_CURRENT}/config" "${DIR_BUILD}/DEBIAN/"
   cp "${DIR_CURRENT}/postinst" "${DIR_BUILD}/DEBIAN/"
   cp "${DIR_CURRENT}/prerm" "${DIR_BUILD}/DEBIAN/"
-  sed -e "/^__I2B2_DROP__/{r ${DIR_RESOURCES}/database/i2b2_postgres_drop.sql" -e "d;}" "${DIR_CURRENT}/postrm" >"${DIR_BUILD}/DEBIAN/postrm" && chmod 0755 "${DIR_BUILD}/DEBIAN/postrm"
+
+  # Process the postrm script by inserting SQL drop statements
+  sed -e "/^__I2B2_DROP__/{r ${DIR_RESOURCES}/database/i2b2_postgres_drop.sql" -e "d;}" "${DIR_CURRENT}/postrm" > "${DIR_BUILD}/DEBIAN/postrm"
+  chmod 0755 "${DIR_BUILD}/DEBIAN/postrm"
 }
 
-function build_package() {
+build_package() {
   dpkg-deb --build "${DIR_BUILD}"
   rm -rf "${DIR_BUILD}"
 }
@@ -50,7 +67,7 @@ main() {
   set -euo pipefail
   load_common_files_and_prepare_environment
   prepare_package_environment
-  prepare_managment_scripts_and_files
+  prepare_management_scripts_and_files
   build_package
 }
 
