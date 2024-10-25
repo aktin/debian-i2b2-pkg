@@ -43,12 +43,11 @@ load_docker_environment_variables() {
 prepare_wildfly_docker() {
   echo "Preparing WildFly Docker image..."
   mkdir -p "${DIR_BUILD}/wildfly"
-  cp -r "${DIR_CURRENT}/wildfly" "${DIR_BUILD}/"
-  cp "${DIR_RESOURCES}/wildfly_cli/config.cli" "${DIR_BUILD}/wildfly/"
-
-  download_wildfly "/wildfly"
-  download_wildfly_jdbc "/wildfly"
-  download_wildfly_i2b2 "/wildfly"
+  cp -r "${DIR_CURRENT}/wildfly/Dockerfile" "${DIR_BUILD}/wildfly/"
+  download_wildfly "/wildfly/wildfly"
+  config_wildfly "/wildfly/wildfly"
+  download_wildfly_jdbc "/wildfly/wildfly/standalone/deployments"
+  download_wildfly_i2b2 "/wildfly/wildfly/standalone/deployments"
 }
 
 prepare_postgresql_docker() {
@@ -101,10 +100,10 @@ main() {
   load_common_files_and_prepare_environment
   load_docker_environment_variables
   prepare_wildfly_docker
-  prepare_postgresql_docker
-  prepare_apache2_docker
-  clean_up_old_docker_images
-  build_docker_images
+  #prepare_postgresql_docker
+  #prepare_apache2_docker
+  #clean_up_old_docker_images
+  #build_docker_images
 }
 
 main

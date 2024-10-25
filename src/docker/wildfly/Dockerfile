@@ -1,29 +1,37 @@
-FROM ubuntu:24.04
+# --------------------------------------
+# Dockerfile for WildFly Application Server with i2b2 Deployment
+# Version:      1.0
+# Author:       shuening@ukaachen.de, skurka@ukaachen.de, akombeiz@ukaachen.de
+# Date:         25 Oct 24
+# Purpose:      Builds a Docker image for pre-configured WildFly application server,
+#               installs OpenJDK 11 and creates Wildfly user.
+# --------------------------------------
 
-RUN apt update
-RUN apt install openjdk-11-jdk -y
+FROM ubuntu:22.04
 
-COPY ./wildfly-* /opt/wildfly
+LABEL maintainer="AKTIN IT <it-support@aktin.org>"
+
+# Update package lists, install OpenJDK 11, and clean up APT cache
+RUN apt update && \
+    apt install -y openjdk-11-jdk && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/wildfly
 
+# Copy WildFly distribution
+COPY ./wildfly /opt/wildfly
+
+# Create a 'wildfly' system user with no login shell
 RUN adduser --system --group --disabled-login --home /var/lib/wildfly wildfly
-RUN chown -R wildfly:wildfly ./standalone/configuration
-RUN chown -R wildfly:wildfly ./standalone/deployments
-RUN chown -R wildfly:wildfly .
 
+# Change ownership of WildFly directories to 'wildfly' user
+RUN chown -R wildfly:wildfly /opt/wildfly
+
+# Switch to 'wildfly' user for security
 USER wildfly
-RUN sed -i "s/-Xms64m -Xmx512m/-Xms1024m -Xmx2g/" ./bin/appclient.conf
-RUN sed -i "s/-Xms64m -Xmx512m/-Xms1024m -Xmx2g/" ./bin/standalone.conf
-RUN echo "JAVA_OPTS=\"\$JAVA_OPTS -Dlog4j2.formatMsgNoLookups=true\"" >> ./bin/standalone.conf
 
-COPY ./i2b2.war standalone/deployments/
-COPY ./*.jar standalone/deployments/
-
-COPY ./*.cli .
-RUN ./bin/jboss-cli.sh --file=./config.cli
-RUN rm ./*.cli
-
+# Remove WildFly configuration history to reduce image size
 RUN rm -rf ./standalone/configuration/standalone_xml_history/current/*
 
+# Set the default command to start WildFly in standalone mode, binding to all interfaces
 CMD ["/opt/wildfly/bin/standalone.sh", "-b", "0.0.0.0"]
