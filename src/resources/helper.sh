@@ -1,38 +1,60 @@
 #!/bin/bash
+#--------------------------------------
+# Script Name:  helper.sh
+# Version:      1.0
+# Author:       akombeiz@ukaachen.de
+# Date:         25 Oct 24
+# Purpose:      Provides two functions to add or remove key-value entries within the [Unit] section of a systemd service file located in /lib/systemd/system/.
+#--------------------------------------
 
-# only for keys within [UNIT]
-function add_entry_to_service() {
-    set -euo pipefail
-    local DIR_SERVICE="/lib/systemd/system/${1}"
-    local KEY="${2}"
-    local VALUE="${3}"
-    # workaround as grep returns null if key not found which leads to an error
-    if grep -q "^${KEY}=" "${DIR_SERVICE}"; then
-        LINE="$(grep "^${KEY}=" "${DIR_SERVICE}")"
-        if [[ "${LINE}" != *"${VALUE}"* ]]; then
-            LINE+=" ${VALUE}"
-            sed -i "s/^${KEY}=.*/${LINE}/" "${DIR_SERVICE}"
+# Function to add a value to a key within the [Unit] section of a systemd service file
+add_entry_to_service() {
+    local service_name="$1"
+    local key="$2"
+    local value="$3"
+    local service_file="/lib/systemd/system/${service_name}"
+
+    # Check if the key exists in the service file
+    if grep -q "^${key}=" "${service_file}"; then
+        # Get the current line with the key
+        local line
+        line="$(grep "^${key}=" "${service_file}")"
+
+        # If the value is not already in the line, append it
+        if [[ "${line}" != *"${value}"* ]]; then
+            line+=" ${value}"
+            # Update the line in the service file
+            sed -i "s/^${key}=.*/${line}/" "${service_file}"
         fi
     else
-        sed -ri "/^\[Unit\]$/a ${KEY}=${VALUE}" "${DIR_SERVICE}"
+        # Add the key and value after the [Unit] section
+        sed -i "/^\[Unit\]$/a ${key}=${value}" "${service_file}"
     fi
 }
 
-# only for keys within [UNIT]
-function remove_entry_from_service() {
-    set -euo pipefail
-    local DIR_SERVICE="/lib/systemd/system/${1}"
-    local KEY="${2}"
-    local VALUE="${3}"
-    # workaround as grep returns null if key not found which leads to an error
-    if grep -q "^${KEY}=" "${DIR_SERVICE}"; then
-        LINE=$(grep "^${KEY}=" "${DIR_SERVICE}")
-        if [[ "${LINE}" == *"${VALUE}"* ]]; then
-            LINE="$(echo ${LINE} | sed -e "s/${VALUE}//")"
-            if [[ -z "$(cut -d'=' -f2 <<<${LINE})" ]]; then
-                sed -i "/^${KEY}=.*/d" "${DIR_SERVICE}"
+# Function to remove a value from a key within the [Unit] section of a systemd service file
+remove_entry_from_service() {
+    local service_name="$1"
+    local key="$2"
+    local value="$3"
+    local service_file="/lib/systemd/system/${service_name}"
+
+    # Check if the key exists in the service file
+    if grep -q "^${key}=" "${service_file}"; then
+        # Get the current line with the key
+        local line
+        line="$(grep "^${key}=" "${service_file}")"
+
+        # If the value is in the line, remove it
+        if [[ "${line}" == *"${value}"* ]]; then
+            # Remove the value from the line
+            line="${line//${value}/}"
+            # If the key has no values left, delete the key line
+            if [[ -z "$(cut -d'=' -f2 <<<"${line}" | tr -d ' ')" ]]; then
+                sed -i "/^${key}=.*/d" "${service_file}"
             else
-                sed -i "s/^${KEY}=.*/${LINE}/" "${DIR_SERVICE}"
+                # Update the line in the service file
+                sed -i "s/^${key}=.*/${line}/" "${service_file}"
             fi
         fi
     fi
