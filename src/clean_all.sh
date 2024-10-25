@@ -13,7 +13,7 @@ set -euo pipefail
 readonly DIR_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
 main() {
-    rm -rf "${DIR_ROOT}/debian/build" "${DIR_ROOT}/docker/build"
+  rm -rf "${DIR_ROOT}/debian/build" "${DIR_ROOT}/docker/build"
 }
 
 main

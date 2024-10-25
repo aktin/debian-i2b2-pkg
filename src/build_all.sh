@@ -12,17 +12,17 @@ set -euo pipefail
 # Check if VERSION is provided as the first argument
 readonly VERSION="${1:-}"
 if [[ -z "${VERSION}" ]]; then
-    echo "Error: VERSION is not specified." >&2
-    echo "Usage: $0 <version>"
-    exit 1
+  echo "Error: VERSION is not specified." >&2
+  echo "Usage: $0 <version>"
+  exit 1
 fi
 
 # Get the directory where this script is located
 readonly DIR_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
 main() {
-    source "${DIR_ROOT}/debian/build.sh" "${VERSION}"
-    source "${DIR_ROOT}/docker/build.sh" "${VERSION}" "full"
+  source "${DIR_ROOT}/debian/build.sh" "${VERSION}"
+  source "${DIR_ROOT}/docker/build.sh" "${VERSION}" "full"
 }
 
 main
