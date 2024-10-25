@@ -33,7 +33,9 @@ load_common_files_and_prepare_environment() {
 
 load_docker_environment_variables() {
   if [ -f "${DIR_CURRENT}/.env" ]; then
-    export "$(cat ${DIR_CURRENT}/.env | xargs)"
+    set -a
+    . "${DIR_CURRENT}/.env"
+    set +a
   else
     echo "Error: .env file not found in ${DIR_CURRENT}" >&2
     exit 1
@@ -43,7 +45,7 @@ load_docker_environment_variables() {
 prepare_wildfly_docker() {
   echo "Preparing WildFly Docker image..."
   mkdir -p "${DIR_BUILD}/wildfly"
-  cp -r "${DIR_CURRENT}/wildfly/Dockerfile" "${DIR_BUILD}/wildfly/"
+  sed -e "s/__UBUNTU_VERSION__/${VERSION_WILDFLY_DOCKER_UBUNTU_BASE}/g" "${DIR_CURRENT}/wildfly/Dockerfile" > "${DIR_BUILD}/wildfly/Dockerfile"
   download_wildfly "/wildfly/wildfly"
   config_wildfly "/wildfly/wildfly"
   download_wildfly_jdbc "/wildfly/wildfly/standalone/deployments"
@@ -53,7 +55,7 @@ prepare_wildfly_docker() {
 prepare_postgresql_docker() {
   echo "Preparing PostgreSQL Docker image..."
   mkdir -p "${DIR_BUILD}/database"
-  cp "${DIR_CURRENT}/database/Dockerfile" "${DIR_BUILD}/database/"
+  sed -e "s/__POSTGRESQL_VERSION__/${VERSION_POSTGRESQL}/g" "${DIR_CURRENT}/database/Dockerfile" > "${DIR_BUILD}/database/Dockerfile"
   copy_database_for_postinstall "/database/sql"
   cp "${DIR_CURRENT}/database/sql/update_wildfly_host.sql" "${DIR_BUILD}/database/sql/i2b2_update_wildfly_host.sql"
 }
@@ -61,7 +63,7 @@ prepare_postgresql_docker() {
 prepare_apache2_docker() {
   echo "Preparing Apache2 Docker image..."
   mkdir -p "${DIR_BUILD}/httpd"
-  cp "${DIR_CURRENT}/httpd/Dockerfile" "${DIR_BUILD}/httpd/"
+  sed -e "s/__APACHE_VERSION__/${VERSION_APACHE_DOCKER_PHP_BASE}/g" "${DIR_CURRENT}/httpd/Dockerfile" > "${DIR_BUILD}/httpd/Dockerfile"
   download_i2b2_webclient "/httpd/webclient"
   config_i2b2_webclient "/httpd/webclient" "wildfly"
 }

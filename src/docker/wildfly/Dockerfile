@@ -7,7 +7,7 @@
 #               installs OpenJDK 11 and creates Wildfly user.
 # --------------------------------------
 
-FROM ubuntu:22.04
+FROM ubuntu:__UBUNTU_VERSION__
 
 LABEL maintainer="AKTIN IT <it-support@aktin.org>"
 

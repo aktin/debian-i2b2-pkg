@@ -7,7 +7,7 @@
 #               the i2b2 web client deployment.
 # --------------------------------------
 
-FROM php:8.3-apache
+FROM php:__APACHE_VERSION__
 
 LABEL maintainer="AKTIN IT <it-support@aktin.org>"
 

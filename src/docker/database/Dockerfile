@@ -7,7 +7,7 @@
 #               the i2b2 database using provided SQL scripts.
 # --------------------------------------
 
-FROM postgres:16
+FROM postgres:__POSTGRESQL_VERSION__
 
 LABEL maintainer="AKTIN IT <it-support@aktin.org>"
 
