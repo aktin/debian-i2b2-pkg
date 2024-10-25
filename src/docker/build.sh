@@ -101,9 +101,9 @@ main() {
   load_docker_environment_variables
   prepare_wildfly_docker
   prepare_postgresql_docker
-  #prepare_apache2_docker
-  #clean_up_old_docker_images
-  #build_docker_images
+  prepare_apache2_docker
+  clean_up_old_docker_images
+  build_docker_images
 }
 
 main
