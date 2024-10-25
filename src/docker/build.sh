@@ -97,14 +97,14 @@ build_docker_images() {
 }
 
 main() {
-    set -euo pipefail
-    load_common_files_and_prepare_environment
-    load_docker_environment_variables
-    prepare_wildfly_docker
-    prepare_postgresql_docker
-    prepare_apache2_docker
-    #clean_up_old_docker_images
-    #build_docker_images
+  set -euo pipefail
+  load_common_files_and_prepare_environment
+  load_docker_environment_variables
+  prepare_wildfly_docker
+  prepare_postgresql_docker
+  prepare_apache2_docker
+  clean_up_old_docker_images
+  build_docker_images
 }
 
 main
