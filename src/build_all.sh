@@ -20,9 +20,5 @@ fi
 # Get the directory where this script is located
 readonly DIR_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
-main() {
-  source "${DIR_ROOT}/debian/build.sh" "${VERSION}"
-  source "${DIR_ROOT}/docker/build.sh" "${VERSION}"
-}
-
-main
+source "${DIR_ROOT}/debian/build.sh" "${VERSION}"
+source "${DIR_ROOT}/docker/build.sh" "${VERSION}"

@@ -12,8 +12,4 @@ set -euo pipefail
 # Get the directory where this script is located
 readonly DIR_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
-main() {
-  rm -rf "${DIR_ROOT}/debian/build" "${DIR_ROOT}/docker/build"
-}
-
-main
+rm -rf "${DIR_ROOT}/debian/build" "${DIR_ROOT}/docker/build"
