@@ -8,11 +8,10 @@
 #               before the 'aktin-notaufnahme-i2b2' package is removed or upgraded.
 #--------------------------------------
 
-set -euo pipefail
-
 readonly OPERATION="${1}"
 
 main() {
+  set -euo pipefail
   case "$OPERATION" in
     remove)
       echo "Stopping and disabling WildFly service..."

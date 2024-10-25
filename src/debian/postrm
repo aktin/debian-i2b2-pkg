@@ -8,8 +8,6 @@
 #               cleaning up system configurations and data after package removal or purge.
 #--------------------------------------
 
-set -euo pipefail
-
 readonly OPERATION="${1}"
 
 deactivate_php_curl_extension() {
@@ -46,6 +44,7 @@ EOF
 }
 
 main() {
+  set -euo pipefail
   case "$OPERATION" in
     remove)
       deactivate_php_curl_extension

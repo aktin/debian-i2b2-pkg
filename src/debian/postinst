@@ -8,8 +8,6 @@
 #               and sets up necessary users and permissions for the 'aktin-notaufnahme-i2b2' package.
 #--------------------------------------
 
-set -euo pipefail
-
 readonly OPERATION="${1}"
 
 activate_php_curl_extension() {
@@ -76,6 +74,7 @@ remove_i2b2_config_data() {
 }
 
 main() {
+  set -euo pipefail
   case "$OPERATION" in
     configure)
       activate_php_curl_extension
