@@ -17,11 +17,9 @@ function activate_php_curl_extension() {
     systemctl restart apache2
 }
 
-function connect_to_psql() {
-    echo "Connecting to postgres via local unix socket."
-    readonly HOST="localhost"
-    readonly PORT="5432"
-    readonly PSQL="sudo -u postgres psql"
+connect_to_psql() {
+  echo "Connecting to postgres via local unix socket."
+  readonly PSQL="sudo -u postgres psql"
 }
 
 function wait_for_psql_connection() {
@@ -71,20 +69,11 @@ function set_wildfly_service_dependency() {
     add_entry_to_service "wildfly.service" "After" "postgresql.service"
 }
 
-#function deploy_datasources() {
-#    echo -e "Deploying i2b2 datasources ..."
-#    sed -e "s/__HOST__/${HOST}/g" -e "s/__PORT__/${PORT}/g" "/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/datasource/crc-ds.xml" >/opt/wildfly/standalone/deployments/crc-ds.xml
-#    sed -e "s/__HOST__/${HOST}/g" -e "s/__PORT__/${PORT}/g" "/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/datasource/im-ds.xml" >/opt/wildfly/standalone/deployments/im-ds.xml
-#    sed -e "s/__HOST__/${HOST}/g" -e "s/__PORT__/${PORT}/g" "/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/datasource/ont-ds.xml" >/opt/wildfly/standalone/deployments/ont-ds.xml
-#    sed -e "s/__HOST__/${HOST}/g" -e "s/__PORT__/${PORT}/g" "/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/datasource/pm-ds.xml" >/opt/wildfly/standalone/deployments/pm-ds.xml
-#    sed -e "s/__HOST__/${HOST}/g" -e "s/__PORT__/${PORT}/g" "/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/datasource/work-ds.xml" >/opt/wildfly/standalone/deployments/work-ds.xml
-#}
-
-function create_wildfly_user() {
-    echo -e "Creating wildfly user and setting up permissions ..."
-    id -u wildfly >/dev/null || adduser --system --group --disabled-login --home /var/lib/wildfly wildfly
-    chown -R wildfly:wildfly /opt/wildfly
-    chown wildfly:wildfly /opt/wildfly/standalone/deployments/*
+create_wildfly_user() {
+  echo "Creating wildfly user and setting up permissions ..."
+  id -u wildfly >/dev/null || adduser --system --group --disabled-login --home /var/lib/wildfly wildfly
+  chown -R wildfly:wildfly /opt/wildfly
+  chown wildfly:wildfly /opt/wildfly/standalone/deployments/*
 }
 
 function remove_i2b2_config_data() {
