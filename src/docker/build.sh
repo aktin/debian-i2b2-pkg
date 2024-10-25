@@ -11,10 +11,6 @@ if [ -z "${VERSION+x}" ]; then
     fi
 fi
 
-# Optional parameter
-readonly FULL="${2:-}"
-
-
 readonly DIR_CURRENT="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 readonly DIR_BUILD="${DIR_CURRENT}/build"
 
@@ -83,12 +79,8 @@ main() {
     prepare_wildfly_docker
     prepare_postgresql_docker
     prepare_apache2_docker
-    if [ "${FULL}" = "full" ]; then
-        clean_up_old_docker_images
-        build_docker_images
-    fi
+    clean_up_old_docker_images
+    build_docker_images
 }
 
 main
-
-echo "${FULL}"

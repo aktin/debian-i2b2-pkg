@@ -22,7 +22,7 @@ readonly DIR_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
 main() {
   source "${DIR_ROOT}/debian/build.sh" "${VERSION}"
-  source "${DIR_ROOT}/docker/build.sh" "${VERSION}" "full"
+  source "${DIR_ROOT}/docker/build.sh" "${VERSION}"
 }
 
 main
