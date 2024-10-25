@@ -66,7 +66,7 @@ prepare_apache2_docker() {
   config_i2b2_webclient "/httpd/webclient" "wildfly"
 }
 
-clean_up_old_docker_images2() {
+clean_up_old_docker_images() {
   echo "Cleaning up old Docker images and containers..."
   local images=("database" "wildfly" "httpd")
   for image in "${images[@]}"; do
@@ -75,9 +75,9 @@ clean_up_old_docker_images2() {
     # Stop and remove running containers based on the image
     local container_ids
     container_ids=$(docker ps -a -q --filter "ancestor=${full_image_name}:latest")
-    if [ -n "$container_ids" ]; then
-      docker stop $container_ids || true
-      docker rm $container_ids || true
+    if [ -n "${container_ids}" ]; then
+      docker stop "${container_ids}" || true
+      docker rm "${container_ids}" || true
     fi
 
     # Remove the Docker image
@@ -100,7 +100,7 @@ main() {
   load_common_files_and_prepare_environment
   load_docker_environment_variables
   prepare_wildfly_docker
-  #prepare_postgresql_docker
+  prepare_postgresql_docker
   #prepare_apache2_docker
   #clean_up_old_docker_images
   #build_docker_images
