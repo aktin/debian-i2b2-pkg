@@ -23,9 +23,6 @@ if [ -z "${DIR_BUILD}" ]; then
     exit 1
 fi
 
-# Convert DIR_BUILD to an absolute path
-DIR_BUILD="$(cd "${DIR_BUILD}" && pwd)"
-
 # Superdirectory this script is located with /resources appended, namely src/resources
 readonly DIR_RESOURCES="$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" &>/dev/null && pwd)/resources"
 
@@ -37,7 +34,7 @@ function init_build_environment() {
     . "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)/versions"
     set +a
     if [ ! -d "${DIR_BUILD}" ]; then
-      mkdir "${DIR_BUILD}"
+      mkdir -p "${DIR_BUILD}"
     fi
     if [ ! -d "${DIR_DOWNLOADS}" ]; then
       mkdir "${DIR_DOWNLOADS}"
@@ -56,8 +53,7 @@ function download_i2b2_webclient() {
       wget "https://github.com/i2b2/i2b2-webclient/archive/v${VERSION_I2B2_WEBCLIENT}.zip" -P "${DIR_DOWNLOADS}"
     fi
 
-    unzip "${DIR_DOWNLOADS}/v${VERSION_I2B2_WEBCLIENT}.zip" -d "${DIR_BUILD}"
-
+    unzip -q "${DIR_DOWNLOADS}/v${VERSION_I2B2_WEBCLIENT}.zip" -d "${DIR_BUILD}"
     mkdir -p "$(dirname "${DIR_BUILD}${dir_webclient}")"
     mv "${DIR_BUILD}/i2b2-webclient-${VERSION_I2B2_WEBCLIENT}" "${DIR_BUILD}${dir_webclient}"
 }
@@ -86,7 +82,7 @@ function download_wildfly() {
         wget "https://github.com/wildfly/wildfly/releases/download/${VERSION_WILDFLY}/wildfly-${VERSION_WILDFLY}.zip" -P "${DIR_DOWNLOADS}"
     fi
 
-    unzip "${DIR_DOWNLOADS}/wildfly-${VERSION_WILDFLY}.zip" -d "${DIR_BUILD}"
+    unzip -q "${DIR_DOWNLOADS}/wildfly-${VERSION_WILDFLY}.zip" -d "${DIR_BUILD}"
     mkdir -p "$(dirname "${DIR_BUILD}${dir_wildfly_home}")"
     mv "${DIR_BUILD}/wildfly-${VERSION_WILDFLY}" "${DIR_BUILD}${dir_wildfly_home}"
 }
@@ -146,7 +142,7 @@ function download_wildfly_i2b2() {
       exit 1
     fi
 
-    unzip -j "${DIR_DOWNLOADS}/i2b2core-upgrade-${VERSION_I2B2}.zip" "i2b2/deployments/*" \
+    unzip -q -j "${DIR_DOWNLOADS}/i2b2core-upgrade-${VERSION_I2B2}.zip" "i2b2/deployments/*" \
           -d "${DIR_BUILD}${DIR_WILDFLY_DEPLOYMENTS}"
 }
 
