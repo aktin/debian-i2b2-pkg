@@ -146,11 +146,11 @@ download_and_deploy_i2b2_war() {
         -d "${DIR_BUILD}${dir_wildfly_deployments}"
 }
 
-copy_database_for_postinstall() {
+copy_sql_scripts_for_postinstall() {
   local dir_db_postinstall="${1}"
 
   mkdir -p "$(dirname "${DIR_BUILD}${dir_db_postinstall}")"
-  cp -r "${DIR_RESOURCES}/database" "${DIR_BUILD}${dir_db_postinstall}"
+  cp -r "${DIR_RESOURCES}/sql" "${DIR_BUILD}${dir_db_postinstall}"
 }
 
 copy_helpers_for_postinstall() {

@@ -38,7 +38,7 @@ prepare_package_environment() {
   setup_wildfly_systemd "/opt/wildfly" "/etc/wildfly" "/lib/systemd/system"
   download_and_deploy_jdbc_driver "/opt/wildfly/standalone/deployments"
   download_and_deploy_i2b2_war "/opt/wildfly/standalone/deployments"
-  copy_database_for_postinstall "/usr/share/${PACKAGE}/database"
+  copy_sql_scripts_for_postinstall "/usr/share/${PACKAGE}/database"
   copy_helpers_for_postinstall "/usr/share/${PACKAGE}"
 }
 

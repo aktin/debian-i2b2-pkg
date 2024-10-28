@@ -57,7 +57,7 @@ prepare_postgresql_docker() {
   echo "Preparing PostgreSQL Docker image..."
   mkdir -p "${DIR_BUILD}/database"
   sed -e "s/__POSTGRESQL_VERSION__/${VERSION_POSTGRESQL}/g" "${DIR_CURRENT}/database/Dockerfile" > "${DIR_BUILD}/database/Dockerfile"
-  copy_database_for_postinstall "/database/sql"
+  copy_sql_scripts_for_postinstall "/database/sql"
   cp "${DIR_CURRENT}/database/sql/update_wildfly_host.sql" "${DIR_BUILD}/database/sql/i2b2_update_wildfly_host.sql"
 }
 
