@@ -14,4 +14,4 @@ LABEL maintainer="AKTIN IT <it-support@aktin.org>"
 RUN mv /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini
 
 # Copy the i2b2 web client files into the Apache web directory
-COPY ./i2b2webclient /var/www/html/webclient
+COPY ./webclient /var/www/html/webclient

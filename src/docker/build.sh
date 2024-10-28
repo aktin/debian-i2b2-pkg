@@ -79,13 +79,19 @@ clean_up_old_docker_images() {
     local container_ids
     container_ids=$(docker ps -a -q --filter "ancestor=${full_image_name}:latest")
     if [ -n "${container_ids}" ]; then
-      docker stop "${container_ids}" || true
-      docker rm "${container_ids}" || true
+      echo "Stopping and removing containers for image ${full_image_name}:latest"
+      docker stop ${container_ids} || true
+      docker rm ${container_ids} || true
+    else
+      echo "No containers found for image ${full_image_name}:latest"
     fi
 
     # Remove the Docker image
     if docker images "${full_image_name}:latest" -q >/dev/null; then
+      echo "Removing image ${full_image_name}:latest"
       docker image rm "${full_image_name}:latest" || true
+    else
+      echo "Image ${full_image_name}:latest does not exist"
     fi
   done
 }
