@@ -43,7 +43,7 @@ wait_for_psql_connection() {
 init_and_seed_i2b2_database() {
   if [[ $(eval "${PSQL} -l" | grep "i2b2" | wc -l) == 0 ]]; then
     echo "Creating i2b2 database and users ..."
-    eval "${PSQL} -v ON_ERROR_STOP=1 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/database/i2b2_postgres_init.sql" >/dev/null
+    eval "${PSQL} -v ON_ERROR_STOP=1 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/database/i2b2_init.sql" >/dev/null
     echo "Seeding i2b2 database ..."
     eval "${PSQL} -v ON_ERROR_STOP=1 -d i2b2 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/database/i2b2_db.sql" >/dev/null
   else

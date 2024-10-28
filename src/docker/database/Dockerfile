@@ -16,20 +16,9 @@ ENV POSTGRES_PASSWORD=postgres
 # Create a directory for custom SQL scripts
 RUN mkdir -p /sql.d
 
-# Copy scripts into the initialization directory
-COPY ./sql/*.sql /docker-entrypoint-initdb.d/
+# Copy SQL scripts into directory for custom SQL scripts
+COPY ./sql/*sql /sql.d/
 
-# Copy SQL scripts into the image
-COPY ./sql/i2b2_postgres_drop.sql           /sql.d/i2b2_drop.sql
-
-# Concatenate the SQL scripts into a single initialization script
-RUN cat /docker-entrypoint-initdb.d/00_i2b2_init.sql \
-         /docker-entrypoint-initdb.d/01_i2b2_data.sql \
-         /docker-entrypoint-initdb.d/02_i2b2_update_wildfly_host.sql \
-         > /docker-entrypoint-initdb.d/init.sql && \
-    rm /docker-entrypoint-initdb.d/00_i2b2_init.sql \
-       /docker-entrypoint-initdb.d/01_i2b2_data.sql \
-       /docker-entrypoint-initdb.d/02_i2b2_update_wildfly_host.sql
-
-# Move database deinstall script into folder for custom scripts
-RUN mv /docker-entrypoint-initdb.d/i2b2_postgres_drop.sql /sql.d/i2b2_drop.sql
+# Concatenate custom SQL scripts into a single initialization script
+RUN cat /sql.d/i2b2_init.sql /sql.d/i2b2_db.sql /sql.d/update_wildfly_host.sql > /docker-entrypoint-initdb.d/init.sql && \
+    rm /sql.d/i2b2_init.sql /sql.d/i2b2_db.sql /sql.d/update_wildfly_host.sql

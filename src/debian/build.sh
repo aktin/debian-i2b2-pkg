@@ -54,7 +54,7 @@ prepare_management_scripts_and_files() {
   cp "${DIR_CURRENT}/prerm" "${DIR_BUILD}/DEBIAN/"
 
   # Process the postrm script by inserting SQL drop statements
-  sed -e "/^__I2B2_DROP__/{r ${DIR_RESOURCES}/database/i2b2_postgres_drop.sql" -e "d;}" "${DIR_CURRENT}/postrm" > "${DIR_BUILD}/DEBIAN/postrm"
+  sed -e "/^__I2B2_DROP__/{r ${DIR_RESOURCES}/database/i2b2_drop.sql" -e "d;}" "${DIR_CURRENT}/postrm" > "${DIR_BUILD}/DEBIAN/postrm"
   chmod 0755 "${DIR_BUILD}/DEBIAN/postrm"
 }
 
