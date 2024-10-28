@@ -31,15 +31,15 @@ load_common_files_and_prepare_environment() {
 }
 
 prepare_package_environment() {
-  download_i2b2_webclient "/var/www/html/webclient"
-  config_i2b2_webclient "/var/www/html/webclient" "localhost"
-  download_wildfly "/opt/wildfly"
-  config_wildfly "/opt/wildfly"
-  init_wildfly_systemd "/opt/wildfly" "/etc/wildfly" "/lib/systemd/system"
-  download_wildfly_jdbc "/opt/wildfly/standalone/deployments"
-  download_wildfly_i2b2 "/opt/wildfly/standalone/deployments"
+  download_and_extract_i2b2_webclient "/var/www/html/webclient"
+  configure_i2b2_webclient "/var/www/html/webclient" "localhost"
+  download_and_extract_wildfly "/opt/wildfly"
+  configure_wildfly "/opt/wildfly"
+  setup_wildfly_systemd "/opt/wildfly" "/etc/wildfly" "/lib/systemd/system"
+  download_and_deploy_jdbc_driver "/opt/wildfly/standalone/deployments"
+  download_and_deploy_i2b2_war "/opt/wildfly/standalone/deployments"
   copy_database_for_postinstall "/usr/share/${PACKAGE}/database"
-  copy_helper_functions_for_postinstall "/usr/share/${PACKAGE}"
+  copy_helpers_for_postinstall "/usr/share/${PACKAGE}"
 }
 
 prepare_management_scripts_and_files() {

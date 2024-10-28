@@ -46,10 +46,10 @@ prepare_wildfly_docker() {
   echo "Preparing WildFly Docker image..."
   mkdir -p "${DIR_BUILD}/wildfly"
   sed -e "s/__UBUNTU_VERSION__/${VERSION_WILDFLY_DOCKER_UBUNTU_BASE}/g" "${DIR_CURRENT}/wildfly/Dockerfile" > "${DIR_BUILD}/wildfly/Dockerfile"
-  download_wildfly "/wildfly/wildfly"
-  config_wildfly "/wildfly/wildfly"
-  download_wildfly_jdbc "/wildfly/wildfly/standalone/deployments"
-  download_wildfly_i2b2 "/wildfly/wildfly/standalone/deployments"
+  download_and_extract_wildfly "/wildfly/wildfly"
+  configure_wildfly "/wildfly/wildfly"
+  download_and_deploy_jdbc_driver "/wildfly/wildfly/standalone/deployments"
+  download_and_deploy_i2b2_war "/wildfly/wildfly/standalone/deployments"
 }
 
 prepare_postgresql_docker() {
@@ -64,8 +64,8 @@ prepare_apache2_docker() {
   echo "Preparing Apache2 Docker image..."
   mkdir -p "${DIR_BUILD}/httpd"
   sed -e "s/__APACHE_VERSION__/${VERSION_APACHE_DOCKER_PHP_BASE}/g" "${DIR_CURRENT}/httpd/Dockerfile" > "${DIR_BUILD}/httpd/Dockerfile"
-  download_i2b2_webclient "/httpd/webclient"
-  config_i2b2_webclient "/httpd/webclient" "wildfly"
+  download_and_extract_i2b2_webclient "/httpd/webclient"
+  configure_i2b2_webclient "/httpd/webclient" "wildfly"
 }
 
 clean_up_old_docker_images() {

@@ -29,7 +29,7 @@ readonly DIR_RESOURCES="$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" &>/de
 # Define DIR_DOWNLOADS as an absolute path
 readonly DIR_DOWNLOADS="$(dirname "${DIR_RESOURCES}")/downloads"
 
-function init_build_environment() {
+init_build_environment() {
   set -a
   . "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)/versions"
   set +a
@@ -41,11 +41,11 @@ function init_build_environment() {
   fi
 }
 
-function clean_up_build_environment() {
+clean_up_build_environment() {
   rm -rf "${DIR_BUILD}"
 }
 
-function download_i2b2_webclient() {
+download_and_extract_i2b2_webclient() {
   local dir_webclient="${1}"
 
   if [ ! -f "${DIR_DOWNLOADS}/v${VERSION_I2B2_WEBCLIENT}.zip" ]; then
@@ -58,7 +58,7 @@ function download_i2b2_webclient() {
   mv "${DIR_BUILD}/i2b2-webclient-${VERSION_I2B2_WEBCLIENT}" "${DIR_BUILD}${dir_webclient}"
 }
 
-function config_i2b2_webclient() {
+configure_i2b2_webclient() {
   local dir_webclient="${1}"
   local escaped_wildfly_host=$(printf '%s\n' "${2}" | sed 's/[\/&]/\\&/g')
 
@@ -73,7 +73,7 @@ function config_i2b2_webclient() {
   sed -i "s|__WILDFLY_HOST__|${escaped_wildfly_host}|" "${DIR_BUILD}${dir_webclient}/i2b2_config_domains.json"
 }
 
-function download_wildfly() {
+download_and_extract_wildfly() {
   local dir_wildfly_home="${1}"
 
   if [ ! -f "${DIR_DOWNLOADS}/wildfly-${VERSION_WILDFLY}.zip" ]; then
@@ -87,7 +87,7 @@ function download_wildfly() {
   mv "${DIR_BUILD}/wildfly-${VERSION_WILDFLY}" "${DIR_BUILD}${dir_wildfly_home}"
 }
 
-function init_wildfly_systemd() {
+setup_wildfly_systemd() {
   local dir_wildfly_home="${1}"
   local dir_wildfly_config="${2}"
   local dir_systemd="${3}"
@@ -101,7 +101,7 @@ function init_wildfly_systemd() {
   cp "${DIR_BUILD}${dir_wildfly_home}/docs/contrib/scripts/systemd/launch.sh" "${DIR_BUILD}${dir_wildfly_home}/bin/"
 }
 
-function config_wildfly() {
+configure_wildfly() {
   local dir_wildfly_home="${1}"
 
   # Increase JVM heap size
@@ -122,7 +122,7 @@ function config_wildfly() {
   "${DIR_BUILD}${dir_wildfly_home}/bin/jboss-cli.sh" --file="${config_cli_processed}"
 }
 
-function download_wildfly_jdbc() {
+download_and_deploy_jdbc_driver() {
   local dir_wildfly_deployments="${1}"
 
   if [ ! -f "${DIR_DOWNLOADS}/postgresql-${VERSION_POSTGRES_JDBC}.jar" ]; then
@@ -134,7 +134,7 @@ function download_wildfly_jdbc() {
 }
 
 # TODO FIX THIS
-function download_wildfly_i2b2() {
+download_and_deploy_i2b2_war() {
   local dir_wildfly_deployments="${1}"
 
   if [ ! -f "${DIR_DOWNLOADS}/i2b2core-upgrade-${VERSION_I2B2}.zip" ]; then
@@ -146,14 +146,14 @@ function download_wildfly_i2b2() {
         -d "${DIR_BUILD}${dir_wildfly_deployments}"
 }
 
-function copy_database_for_postinstall() {
+copy_database_for_postinstall() {
   local dir_db_postinstall="${1}"
 
   mkdir -p "$(dirname "${DIR_BUILD}${dir_db_postinstall}")"
   cp -r "${DIR_RESOURCES}/database" "${DIR_BUILD}${dir_db_postinstall}"
 }
 
-function copy_helper_functions_for_postinstall() {
+copy_helpers_for_postinstall() {
   local dir_helper_postinstall="${1}"
 
   mkdir -p "$(dirname "${DIR_BUILD}${dir_helper_postinstall}")"
