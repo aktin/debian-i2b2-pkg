@@ -62,7 +62,7 @@ configure_i2b2_webclient() {
   local dir_webclient="${1}"
   local escaped_wildfly_host=$(printf '%s\n' "${2}" | sed 's/[\/&]/\\&/g')
 
-  cp ${DIR_RESOURCES}/i2b2_config/* ${DIR_BUILD}${dir_webclient}/
+  cp "${DIR_RESOURCES}/httpd/"* "${DIR_BUILD}${dir_webclient}/"
 
   sed -i "s|loginDefaultUsername : \"demo\"|loginDefaultUsername : \"\"|" "${DIR_BUILD}${dir_webclient}/js-i2b2/i2b2_ui_config.js"
   sed -i "s|loginDefaultPassword : \"demouser\"|loginDefaultPassword : \"\"|" "${DIR_BUILD}${dir_webclient}/js-i2b2/i2b2_ui_config.js"
@@ -112,7 +112,7 @@ configure_wildfly() {
   echo 'JAVA_OPTS="$JAVA_OPTS -Dlog4j2.formatMsgNoLookups=true"' >>"${DIR_BUILD}${dir_wildfly_home}/bin/standalone.conf"
 
   # Prepare the config.cli file
-  local config_cli_template="${DIR_RESOURCES}/wildfly_cli/config.cli"
+  local config_cli_template="${DIR_RESOURCES}/wildfly/config.cli"
   local config_cli_processed="${DIR_BUILD}${dir_wildfly_home}/bin/i2b2_config.cli"
 
   # Replace the placeholder in the config.cli file
