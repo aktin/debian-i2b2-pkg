@@ -3,8 +3,7 @@
 # Version:      1.0
 # Author:       shuening@ukaachen.de, skurka@ukaachen.de, akombeiz@ukaachen.de
 # Date:         25 Oct 24
-# Purpose:      Builds a Docker image for Apache2 with PHP, configured for
-#               the i2b2 web client deployment.
+# Purpose:      Dockerfile to build an Apache2 image with PHP, configured for the i2b2 web client deployment.
 # --------------------------------------
 
 FROM php:__APACHE_VERSION__

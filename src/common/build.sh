@@ -4,8 +4,8 @@
 # Version:      1.0
 # Author:       skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
 # Date:         24 Oct 24
-# Purpose:      Automates the setup and configuration of the i2b2 web client, WildFly application server, and related resources.
-#--------------------------------------
+# Purpose:      This helper script automates the downloading, setup, and configuration of the i2b2 web client and WildFly application server. It is
+#               used by other build.sh scripts, with all paths relative to the corresponding /build folder.
 
 set -euo pipefail
 

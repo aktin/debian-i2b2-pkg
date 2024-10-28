@@ -4,8 +4,8 @@
 # Version:      1.0
 # Author:       skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
 # Date:         25 Oct 24
-# Purpose:      Post-installation script that configures services, initializes databases,
-#               and sets up necessary users and permissions for the 'aktin-notaufnahme-i2b2' package.
+# Purpose:      Post-installation script for 'aktin-notaufnahme-i2b2'. It configures services, initializes the i2b2 database, sets up users and
+#               permissions, and ensures all components are enabled and started correctly.
 #--------------------------------------
 
 readonly OPERATION="${1}"

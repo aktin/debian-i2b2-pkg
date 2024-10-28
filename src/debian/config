@@ -4,7 +4,8 @@
 # Version:      1.0
 # Author:       skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
 # Date:         25 Oct 24
-# Purpose:      Debconf configuration script that prompts for database connection settings for 'aktin-notaufnahme-i2b2'.
+# Purpose:      Debconf configuration script that prompts for database connection settings for 'aktin-notaufnahme-i2b2'. It collects user inputs for
+#               the database connection method and credentials, guiding the installation process.
 #--------------------------------------
 
 # Exit on error

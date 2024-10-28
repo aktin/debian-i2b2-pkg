@@ -4,8 +4,8 @@
 # Version:      1.0
 # Author:       skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
 # Date:         25 Oct 24
-# Purpose:      Post-removal script for 'aktin-notaufnahme-i2b2' package that handles
-#               cleaning up system configurations and data after package removal or purge.
+# Purpose:      Post-removal script for 'aktin-notaufnahme-i2b2' package. It cleans up system configurations and data after package removal or purge,
+#               including deactivating PHP cURL extension, deleting WildFly remnants and user, and dropping the i2b2 database during a purge.
 #--------------------------------------
 
 readonly OPERATION="${1}"

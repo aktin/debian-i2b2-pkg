@@ -3,8 +3,7 @@
 # Version:      1.0
 # Author:       shuening@ukaachen.de, skurka@ukaachen.de, akombeiz@ukaachen.de
 # Date:         25 Oct 24
-# Purpose:      Builds a Docker image for PostgreSQL that initializes
-#               the i2b2 database using provided SQL scripts.
+# Purpose:      Dockerfile to build a PostgreSQL image that initializes the i2b2 database.
 # --------------------------------------
 
 FROM postgres:__POSTGRESQL_VERSION__

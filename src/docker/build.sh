@@ -4,8 +4,9 @@
 # Version:      1.0
 # Author:       shuening@ukaachen.de, skurka@ukaachen.de, akombeiz@ukaachen.de
 # Date:         25 Oct 24
-# Purpose:      Builds Docker images for the 'aktin-notaufnahme-i2b2' application by preparing the environment,
-#               loading variables, setting up Docker images, cleaning up old images, and building new ones using Docker Compose.
+# Purpose:      Automates building Docker images for 'aktin-notaufnahme-i2b2'. This script prepares the environment, loads Docker variables, sets up
+#               Docker images, cleans up old images, and builds new ones using Docker Compose, with all paths relative to the corresponding
+#               /build folder.
 #--------------------------------------
 
 set -euo pipefail

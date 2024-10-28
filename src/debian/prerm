@@ -4,9 +4,8 @@
 # Version:      1.0
 # Author:       skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
 # Date:         25 Oct 24
-# Purpose:      Pre-removal script that stops and disables the WildFly service
-#               before the 'aktin-notaufnahme-i2b2' package is removed or upgraded.
-#--------------------------------------
+# Purpose:      Pre-removal script for 'aktin-notaufnahme-i2b2' package. It stops and disables the WildFly service before removal, and during
+#               upgrades, it removes service dependencies between WildFly and PostgreSQL.
 
 readonly OPERATION="${1}"
 

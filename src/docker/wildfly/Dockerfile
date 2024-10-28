@@ -3,8 +3,7 @@
 # Version:      1.0
 # Author:       shuening@ukaachen.de, skurka@ukaachen.de, akombeiz@ukaachen.de
 # Date:         25 Oct 24
-# Purpose:      Builds a Docker image for pre-configured WildFly application server,
-#               installs OpenJDK 11 and creates Wildfly user.
+# Purpose:      Dockerfile to build a pre-configured WildFly application server image.
 # --------------------------------------
 
 FROM ubuntu:__UBUNTU_VERSION__
