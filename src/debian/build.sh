@@ -36,10 +36,10 @@ prepare_package_environment() {
   download_and_extract_wildfly "/opt/wildfly"
   configure_wildfly "/opt/wildfly"
   setup_wildfly_systemd "/opt/wildfly" "/etc/wildfly" "/lib/systemd/system"
-  download_and_deploy_jdbc_driver "/opt/wildfly/standalone/deployments"
-  download_and_deploy_i2b2_war "/opt/wildfly/standalone/deployments"
-  copy_sql_scripts_for_postinstall "/usr/share/${PACKAGE}/database"
-  copy_helpers_for_postinstall "/usr/share/${PACKAGE}"
+  download_and_copy_jdbc_driver "/opt/wildfly/standalone/deployments"
+  download_and_copy_i2b2_war "/opt/wildfly/standalone/deployments"
+  copy_sql_scripts "/usr/share/${PACKAGE}/database"
+  copy_helper_scripts "/usr/share/${PACKAGE}"
 }
 
 prepare_management_scripts_and_files() {

@@ -49,15 +49,15 @@ prepare_wildfly_docker() {
   sed -e "s/__UBUNTU_VERSION__/${VERSION_WILDFLY_DOCKER_UBUNTU_BASE}/g" "${DIR_CURRENT}/wildfly/Dockerfile" > "${DIR_BUILD}/wildfly/Dockerfile"
   download_and_extract_wildfly "/wildfly/wildfly"
   configure_wildfly "/wildfly/wildfly"
-  download_and_deploy_jdbc_driver "/wildfly/wildfly/standalone/deployments"
-  download_and_deploy_i2b2_war "/wildfly/wildfly/standalone/deployments"
+  download_and_copy_jdbc_driver "/wildfly/wildfly/standalone/deployments"
+  download_and_copy_i2b2_war "/wildfly/wildfly/standalone/deployments"
 }
 
 prepare_postgresql_docker() {
   echo "Preparing PostgreSQL Docker image..."
   mkdir -p "${DIR_BUILD}/database"
   sed -e "s/__POSTGRESQL_VERSION__/${VERSION_POSTGRESQL}/g" "${DIR_CURRENT}/database/Dockerfile" > "${DIR_BUILD}/database/Dockerfile"
-  copy_sql_scripts_for_postinstall "/database/sql"
+  copy_sql_scripts "/database/sql"
   cp "${DIR_CURRENT}/database/sql/update_wildfly_host.sql" "${DIR_BUILD}/database/sql/update_wildfly_host.sql"
 }
 

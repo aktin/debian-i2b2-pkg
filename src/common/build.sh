@@ -122,7 +122,7 @@ configure_wildfly() {
   "${DIR_BUILD}${dir_wildfly_home}/bin/jboss-cli.sh" --file="${config_cli_processed}"
 }
 
-download_and_deploy_jdbc_driver() {
+download_and_copy_jdbc_driver() {
   local dir_wildfly_deployments="${1}"
 
   if [ ! -f "${DIR_DOWNLOADS}/postgresql-${VERSION_POSTGRES_JDBC}.jar" ]; then
@@ -134,7 +134,7 @@ download_and_deploy_jdbc_driver() {
 }
 
 # TODO FIX THIS
-download_and_deploy_i2b2_war() {
+download_and_copy_i2b2_war() {
   local dir_wildfly_deployments="${1}"
 
   if [ ! -f "${DIR_DOWNLOADS}/i2b2core-upgrade-${VERSION_I2B2}.zip" ]; then
@@ -146,16 +146,16 @@ download_and_deploy_i2b2_war() {
         -d "${DIR_BUILD}${dir_wildfly_deployments}"
 }
 
-copy_sql_scripts_for_postinstall() {
-  local dir_db_postinstall="${1}"
+copy_sql_scripts() {
+  local dir_db="${1}"
 
-  mkdir -p "$(dirname "${DIR_BUILD}${dir_db_postinstall}")"
-  cp -r "${DIR_RESOURCES}/sql" "${DIR_BUILD}${dir_db_postinstall}"
+  mkdir -p "$(dirname "${DIR_BUILD}${dir_db}")"
+  cp -r "${DIR_RESOURCES}/sql" "${DIR_BUILD}${dir_db}"
 }
 
-copy_helpers_for_postinstall() {
-  local dir_helper_postinstall="${1}"
+copy_helper_scripts() {
+  local dir_helper="${1}"
 
-  mkdir -p "$(dirname "${DIR_BUILD}${dir_helper_postinstall}")"
-  cp "${DIR_RESOURCES}/helper.sh" "${DIR_BUILD}${dir_helper_postinstall}"
+  mkdir -p "$(dirname "${DIR_BUILD}${dir_helper}")"
+  cp "${DIR_RESOURCES}/helper.sh" "${DIR_BUILD}${dir_helper}"
 }
