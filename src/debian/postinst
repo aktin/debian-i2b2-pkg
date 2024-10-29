@@ -38,6 +38,7 @@ wait_for_psql_connection() {
       exit 1
     fi
   done
+  systemctl enable postgresql.service
 }
 
 init_and_seed_i2b2_database() {
@@ -101,4 +102,4 @@ main() {
   esac
 }
 
-main
+main "$@"
