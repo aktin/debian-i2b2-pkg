@@ -45,11 +45,13 @@ prepare_package_environment() {
 prepare_management_scripts_and_files() {
   mkdir -p "${DIR_BUILD}/DEBIAN"
 
-  # Replace placeholders in the control file
-  sed -e "s/__PACKAGE__/${PACKAGE}/g" -e "s/__VERSION__/${VERSION}/g" -e "s/__POSTGRESQL_VERSION__/${VERSION_POSTGRESQL}/g" "${DIR_CURRENT}/control" > "${DIR_BUILD}/DEBIAN/control"
+  # Replace placeholders
+  sed -e "s|__PACKAGE__|${PACKAGE}|g" -e "s|__VERSION__|${VERSION}|g" -e "s|__POSTGRESQL_VERSION__|${POSTGRESQL_VERSION}|g" "${DIR_CURRENT}/control" > "${DIR_BUILD}/DEBIAN/control"
+  local shared_package_name=$(echo "${PACKAGE}" | awk -F '-' '{print $1"-"$2}')
+  sed -e "s|__SHARED_PACKAGE__|${shared_package_name}|g" "${DIR_CURRENT}/templates" > "${DIR_BUILD}/DEBIAN/templates"
+  sed -e "s|__SHARED_PACKAGE__|${shared_package_name}|g" "${DIR_CURRENT}/config" > "${DIR_BUILD}/DEBIAN/config"
 
   # Copy necessary scripts
-  cp "${DIR_CURRENT}/config" "${DIR_BUILD}/DEBIAN/"
   cp "${DIR_CURRENT}/postinst" "${DIR_BUILD}/DEBIAN/"
   cp "${DIR_CURRENT}/prerm" "${DIR_BUILD}/DEBIAN/"
 
