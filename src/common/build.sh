@@ -96,7 +96,7 @@ setup_wildfly_systemd() {
   cp "${DIR_BUILD}${dir_wildfly_home}/docs/contrib/scripts/systemd/wildfly.service" "${DIR_BUILD}${dir_systemd}/"
   cp "${DIR_BUILD}${dir_wildfly_home}/docs/contrib/scripts/systemd/wildfly.conf" "${DIR_BUILD}${dir_wildfly_config}/"
 
-  echo "WILDFLY_HOME=\"${dir_wildfly_home}\"" >>"${DIR_BUILD}${dir_wildfly_config}/wildfly.conf"
+  echo "WILDFLY_HOME=\"${dir_wildfly_home}\"" >> "${DIR_BUILD}${dir_wildfly_config}/wildfly.conf"
 
   cp "${DIR_BUILD}${dir_wildfly_home}/docs/contrib/scripts/systemd/launch.sh" "${DIR_BUILD}${dir_wildfly_home}/bin/"
 }
@@ -149,13 +149,13 @@ download_and_copy_i2b2_war() {
 copy_sql_scripts() {
   local dir_db="${1}"
 
-  mkdir -p "$(dirname "${DIR_BUILD}${dir_db}")"
-  cp -r "${DIR_RESOURCES}/sql" "${DIR_BUILD}${dir_db}"
+  mkdir -p "${DIR_BUILD}${dir_db}"
+  cp -r ${DIR_RESOURCES}/sql/* "${DIR_BUILD}${dir_db}"
 }
 
 copy_helper_scripts() {
   local dir_helper="${1}"
 
-  mkdir -p "$(dirname "${DIR_BUILD}${dir_helper}")"
+  mkdir -p "${DIR_BUILD}${dir_helper}"
   cp "${DIR_RESOURCES}/helper.sh" "${DIR_BUILD}${dir_helper}"
 }
