@@ -1,13 +1,13 @@
 services:
   database:
-    image: ${NAMESPACE_IMAGE_I2B2}-database
+    image: ${IMAGE_NAMESPACE}-database
     build:
       context: ./build/database
   httpd:
-    image: ${NAMESPACE_IMAGE_I2B2}-httpd
+    image: ${IMAGE_NAMESPACE}-httpd
     build:
       context: ./build/httpd
   wildfly:
-    image: ${NAMESPACE_IMAGE_I2B2}-wildfly
+    image: ${IMAGE_NAMESPACE}-wildfly
     build:
       context: ./build/wildfly

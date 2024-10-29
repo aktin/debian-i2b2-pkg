@@ -48,14 +48,14 @@ clean_up_build_environment() {
 download_and_extract_i2b2_webclient() {
   local dir_webclient="${1}"
 
-  if [ ! -f "${DIR_DOWNLOADS}/v${VERSION_I2B2_WEBCLIENT}.zip" ]; then
-    echo "Download i2b2 webclient v${VERSION_I2B2_WEBCLIENT}"
-    wget "https://github.com/i2b2/i2b2-webclient/archive/v${VERSION_I2B2_WEBCLIENT}.zip" -P "${DIR_DOWNLOADS}"
+  if [ ! -f "${DIR_DOWNLOADS}/v${I2B2_WEBCLIENT_VERSION}.zip" ]; then
+    echo "Download i2b2 webclient v${I2B2_WEBCLIENT_VERSION}"
+    wget "https://github.com/i2b2/i2b2-webclient/archive/v${I2B2_WEBCLIENT_VERSION}.zip" -P "${DIR_DOWNLOADS}"
   fi
 
-  unzip -q "${DIR_DOWNLOADS}/v${VERSION_I2B2_WEBCLIENT}.zip" -d "${DIR_BUILD}"
+  unzip -q "${DIR_DOWNLOADS}/v${I2B2_WEBCLIENT_VERSION}.zip" -d "${DIR_BUILD}"
   mkdir -p "$(dirname "${DIR_BUILD}${dir_webclient}")"
-  mv "${DIR_BUILD}/i2b2-webclient-${VERSION_I2B2_WEBCLIENT}" "${DIR_BUILD}${dir_webclient}"
+  mv "${DIR_BUILD}/i2b2-webclient-${I2B2_WEBCLIENT_VERSION}" "${DIR_BUILD}${dir_webclient}"
 }
 
 configure_i2b2_webclient() {
@@ -76,15 +76,15 @@ configure_i2b2_webclient() {
 download_and_extract_wildfly() {
   local dir_wildfly_home="${1}"
 
-  if [ ! -f "${DIR_DOWNLOADS}/wildfly-${VERSION_WILDFLY}.zip" ]; then
-    echo "Download WildFly ${VERSION_WILDFLY}"
-    # wget "https://download.jboss.org/wildfly/${VERSION_WILDFLY}/wildfly-${VERSION_WILDFLY}.zip"  -P "${DIR_DOWNLOADS}"
-    wget "https://github.com/wildfly/wildfly/releases/download/${VERSION_WILDFLY}/wildfly-${VERSION_WILDFLY}.zip" -P "${DIR_DOWNLOADS}"
+  if [ ! -f "${DIR_DOWNLOADS}/wildfly-${WILDFLY_VERSION}.zip" ]; then
+    echo "Download WildFly ${WILDFLY_VERSION}"
+    # wget "https://download.jboss.org/wildfly/${WILDFLY_VERSION}/wildfly-${WILDFLY_VERSION}.zip"  -P "${DIR_DOWNLOADS}"
+    wget "https://github.com/wildfly/wildfly/releases/download/${WILDFLY_VERSION}/wildfly-${WILDFLY_VERSION}.zip" -P "${DIR_DOWNLOADS}"
   fi
 
-  unzip -q "${DIR_DOWNLOADS}/wildfly-${VERSION_WILDFLY}.zip" -d "${DIR_BUILD}"
+  unzip -q "${DIR_DOWNLOADS}/wildfly-${WILDFLY_VERSION}.zip" -d "${DIR_BUILD}"
   mkdir -p "$(dirname "${DIR_BUILD}${dir_wildfly_home}")"
-  mv "${DIR_BUILD}/wildfly-${VERSION_WILDFLY}" "${DIR_BUILD}${dir_wildfly_home}"
+  mv "${DIR_BUILD}/wildfly-${WILDFLY_VERSION}" "${DIR_BUILD}${dir_wildfly_home}"
 }
 
 setup_wildfly_systemd() {
@@ -116,7 +116,7 @@ configure_wildfly() {
   local config_cli_processed="${DIR_BUILD}${dir_wildfly_home}/bin/i2b2_config.cli"
 
   # Replace the placeholder in the config.cli file
-  sed "s/__POSTGRES_JDBC_VERSION__/${VERSION_POSTGRES_JDBC}/g" "${config_cli_template}" > "${config_cli_processed}"
+  sed "s/__POSTGRES_JDBC_VERSION__/${POSTGRES_JDBC_VERSION}/g" "${config_cli_template}" > "${config_cli_processed}"
 
   # Run the JBoss CLI with the processed config.cli file
   "${DIR_BUILD}${dir_wildfly_home}/bin/jboss-cli.sh" --file="${config_cli_processed}"
@@ -125,24 +125,24 @@ configure_wildfly() {
 download_and_copy_jdbc_driver() {
   local dir_wildfly_deployments="${1}"
 
-  if [ ! -f "${DIR_DOWNLOADS}/postgresql-${VERSION_POSTGRES_JDBC}.jar" ]; then
-    echo "Download PostgreSQL JDBC ${VERSION_POSTGRES_JDBC}"
-    wget "https://jdbc.postgresql.org/download/postgresql-${VERSION_POSTGRES_JDBC}.jar" -P "${DIR_DOWNLOADS}"
+  if [ ! -f "${DIR_DOWNLOADS}/postgresql-${POSTGRES_JDBC_VERSION}.jar" ]; then
+    echo "Download PostgreSQL JDBC ${POSTGRES_JDBC_VERSION}"
+    wget "https://jdbc.postgresql.org/download/postgresql-${POSTGRES_JDBC_VERSION}.jar" -P "${DIR_DOWNLOADS}"
   fi
 
-  cp "${DIR_DOWNLOADS}/postgresql-${VERSION_POSTGRES_JDBC}.jar" "${DIR_BUILD}${dir_wildfly_deployments}"
+  cp "${DIR_DOWNLOADS}/postgresql-${POSTGRES_JDBC_VERSION}.jar" "${DIR_BUILD}${dir_wildfly_deployments}"
 }
 
 # TODO FIX THIS
 download_and_copy_i2b2_war() {
   local dir_wildfly_deployments="${1}"
 
-  if [ ! -f "${DIR_DOWNLOADS}/i2b2core-upgrade-${VERSION_I2B2}.zip" ]; then
-    echo "i2b2core-upgrade-${VERSION_I2B2}.zip not found. Please download i2b2core-upgrade-${VERSION_I2B2}.zip from https://www.i2b2.org/software/index.html and move it to ${DIR_DOWNLOADS}. Afterwards re-run build." >&2
+  if [ ! -f "${DIR_DOWNLOADS}/i2b2core-upgrade-${I2B2_VERSION}.zip" ]; then
+    echo "i2b2core-upgrade-${I2B2_VERSION}.zip not found. Please download i2b2core-upgrade-${I2B2_VERSION}.zip from https://www.i2b2.org/software/index.html and move it to ${DIR_DOWNLOADS}. Afterwards re-run build." >&2
     exit 1
   fi
 
-  unzip -q -j "${DIR_DOWNLOADS}/i2b2core-upgrade-${VERSION_I2B2}.zip" "i2b2/deployments/i2b2.war" \
+  unzip -q -j "${DIR_DOWNLOADS}/i2b2core-upgrade-${I2B2_VERSION}.zip" "i2b2/deployments/i2b2.war" \
         -d "${DIR_BUILD}${dir_wildfly_deployments}"
 }
 

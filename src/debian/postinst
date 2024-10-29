@@ -40,7 +40,6 @@ connect_to_psql() {
   fi
 }
 
-
 wait_for_psql_connection() {
   local waitcount=0
   while ! systemctl start postgresql 2>/dev/null; do

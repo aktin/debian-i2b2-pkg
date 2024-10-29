@@ -46,7 +46,7 @@ load_docker_environment_variables() {
 prepare_wildfly_docker() {
   echo "Preparing WildFly Docker image..."
   mkdir -p "${DIR_BUILD}/wildfly"
-  sed -e "s/__UBUNTU_VERSION__/${VERSION_WILDFLY_DOCKER_UBUNTU_BASE}/g" "${DIR_CURRENT}/wildfly/Dockerfile" > "${DIR_BUILD}/wildfly/Dockerfile"
+  sed -e "s/__UBUNTU_VERSION__/${UBUNTU_VERSION_WILDFLY_DOCKER}/g" "${DIR_CURRENT}/wildfly/Dockerfile" > "${DIR_BUILD}/wildfly/Dockerfile"
   download_and_extract_wildfly "/wildfly/wildfly"
   configure_wildfly "/wildfly/wildfly"
   download_and_copy_jdbc_driver "/wildfly/wildfly/standalone/deployments"
@@ -56,7 +56,7 @@ prepare_wildfly_docker() {
 prepare_postgresql_docker() {
   echo "Preparing PostgreSQL Docker image..."
   mkdir -p "${DIR_BUILD}/database"
-  sed -e "s/__POSTGRESQL_VERSION__/${VERSION_POSTGRESQL}/g" "${DIR_CURRENT}/database/Dockerfile" > "${DIR_BUILD}/database/Dockerfile"
+  sed -e "s/__POSTGRESQL_VERSION__/${POSTGRESQL_VERSION}/g" "${DIR_CURRENT}/database/Dockerfile" > "${DIR_BUILD}/database/Dockerfile"
   copy_sql_scripts "/database/sql"
   cp "${DIR_CURRENT}/database/sql/update_wildfly_host.sql" "${DIR_BUILD}/database/sql/update_wildfly_host.sql"
 }
@@ -64,7 +64,7 @@ prepare_postgresql_docker() {
 prepare_apache2_docker() {
   echo "Preparing Apache2 Docker image..."
   mkdir -p "${DIR_BUILD}/httpd"
-  sed -e "s/__APACHE_VERSION__/${VERSION_APACHE_DOCKER_PHP_BASE}/g" "${DIR_CURRENT}/httpd/Dockerfile" > "${DIR_BUILD}/httpd/Dockerfile"
+  sed -e "s/__APACHE_VERSION__/${APACHE_VERSION_PHP_DOCKER}/g" "${DIR_CURRENT}/httpd/Dockerfile" > "${DIR_BUILD}/httpd/Dockerfile"
   download_and_extract_i2b2_webclient "/httpd/webclient"
   configure_i2b2_webclient "/httpd/webclient" "wildfly"
 }
@@ -73,7 +73,7 @@ clean_up_old_docker_images() {
   echo "Cleaning up old Docker images and containers..."
   local images=("database" "wildfly" "httpd")
   for image in "${images[@]}"; do
-    local full_image_name="${NAMESPACE_IMAGE_I2B2}-${image}"
+    local full_image_name="${IMAGE_NAMESPACE}-${image}"
 
     # Stop and remove running containers based on the image
     local container_ids

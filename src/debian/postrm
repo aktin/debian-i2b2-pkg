@@ -38,7 +38,7 @@ delete_wildfly_user() {
 drop_i2b2_database() {
   echo "Dropping i2b2 PostgreSQL database and user..."
   eval "sudo -u postgres psql -v ON_ERROR_STOP=1" <<EOF >/dev/null
-__I2B2_DROP__
+__I2B2_DROP_STATEMENT__
 
 EOF
 }
