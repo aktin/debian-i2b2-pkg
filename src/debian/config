@@ -17,15 +17,15 @@ set -euo
 . /usr/share/debconf/confmodule
 
 # Ask user how they want to connect to the database
-db_input low __SHARED_PACKAGE__/db_conn || true
+db_input low __PACKAGE_NAME__/db_conn || true
 
 # If user did not select unix as the connection method
 if [ "$RET" != "unix" ]; then
   # Ask for database connection details
-  db_input low __SHARED_PACKAGE__/db_host || true
-  db_input low __SHARED_PACKAGE__/db_port || true
-  db_input low __SHARED_PACKAGE__/db_user || true
-  db_input low __SHARED_PACKAGE__/db_pass || true
+  db_input low __PACKAGE_NAME__/db_host || true
+  db_input low __PACKAGE_NAME__/db_port || true
+  db_input low __PACKAGE_NAME__/db_user || true
+  db_input low __PACKAGE_NAME__/db_pass || true
 fi
 
 # Show interface

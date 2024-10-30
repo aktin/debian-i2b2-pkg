@@ -1,5 +1,5 @@
-Package: __PACKAGE__
-Version: __VERSION__
+Package: __PACKAGE_NAME__
+Version: __PACKAGE_VERSION__
 Section: science
 Priority: optional
 Architecture: all
