@@ -41,7 +41,7 @@ init_build_environment() {
     mkdir -p "${DIR_BUILD}"
   fi
   if [ ! -d "${DIR_DOWNLOADS}" ]; then
-    mkdir "${DIR_DOWNLOADS}"
+    mkdir -p "${DIR_DOWNLOADS}"
   fi
 }
 
