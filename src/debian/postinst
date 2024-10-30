@@ -2,10 +2,11 @@
 #--------------------------------------
 # Script Name:  postinst
 # Version:      1.1
-# Author:       skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
+# Authors:      skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
 # Date:         30 Oct 24
-# Purpose:      Post-installation script for 'aktin-notaufnahme-i2b2'. Configures services, initializes the i2b2 database, sets up users and
-#               permissions, ensures all components are enabled and started correctly.
+# Purpose:      Post-installation script for 'aktin-notaufnahme-i2b2'.
+#               Executes after files are unpacked, configuring services, initializing the i2b2 database,
+#               setting up users and permissions, and ensuring all components are enabled and operational.
 #--------------------------------------
 
 readonly OPERATION="${1}"
@@ -76,13 +77,6 @@ create_wildfly_user() {
   chown -R wildfly:wildfly /opt/wildfly
   chown wildfly:wildfly /opt/wildfly/standalone/deployments/*
 }
-
-#remove_i2b2_config_data() {
-#  local i2b2_config_data_path="/var/www/html/webclient/i2b2_config_data.js"
-#  if [[ -f "$i2b2_config_data_path" ]]; then
-#    rm "$i2b2_config_data_path"
-#  fi
-#}
 
 main() {
   set -euo pipefail

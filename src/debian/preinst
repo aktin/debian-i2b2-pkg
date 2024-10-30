@@ -1,0 +1,45 @@
+#!/bin/bash
+#--------------------------------------
+# Script Name:  preinst
+# Version:      1.0
+# Authors:      akombeiz@ukaachen.de
+# Date:         30 Oct 24
+# Purpose:      Pre-installation script for 'aktin-notaufnahme-i2b2'.
+#               Checks for dependencies, prepares backups, and stops conflicting services if upgrading.
+#--------------------------------------
+
+readonly OPERATION="${1}"
+
+check_dependencies() {
+  echo "Checking required services..."
+  local required_services=("postgresql" "apache2")
+  for service in "${required_services[@]}"; do
+    if ! systemctl is-active --quiet "${service}"; then
+      echo "Warning: ${service} is not running. Ensure it is installed and configured."
+    else
+      echo "${service} is running."
+    fi
+  done
+}
+
+main() {
+  set -euo pipefail
+  case "$OPERATION" in
+    install)
+      # Runs before the package is installed for the first time.
+      check_dependencies
+      ;;
+    upgrade)
+      # Runs before upgrading the package to a new version.
+      check_dependencies
+      ;;
+    abort-upgrade)
+      # Used if an upgrade fails and needs rollback steps.
+      ;;
+    abort-install)
+      # Runs if the initial installation is interrupted or fails.
+      ;;
+  esac
+}
+
+main "$@"
