@@ -1,42 +1,40 @@
 #!/bin/bash
 #--------------------------------------
-# Script Name:  build.sh
-# Version:      1.0
-# Author:       skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
-# Date:         25 Oct 24
-# Purpose:      Automates building the Debian package for 'aktin-notaufnahme-i2b2'.
+# Script Name:  build_aktin_i2b2.sh
+# Version:      1.1
+# Authors:      skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
+# Date:         30 Oct 24
+# Purpose:      Automates building the Debian package for 'aktin-notaufnahme-i2b2',
+#               including setup of required resources, configurations, and dependencies.
 #--------------------------------------
 
 set -euo pipefail
 
 readonly PACKAGE_NAME="aktin-notaufnahme-i2b2"
 
-# Determine VERSION: Use environment variable or first script argument
-PACKAGE_VERSION="${PACKAGE_VERSION:-${1:-}}"
+# Determine PACKAGE_VERSION: Use environment variable or first script argument
+readonly PACKAGE_VERSION="${PACKAGE_VERSION:-${1:-}}"
 if [[ -z "${PACKAGE_VERSION}" ]]; then
   echo "Error: PACKAGE_VERSION is not specified." >&2
   echo "Usage: $0 <PACKAGE_VERSION>"
   exit 1
 fi
-readonly PACKAGE_VERSION
 
-# Get the directory where this script is located
+# Define relevant directories as absolute paths
 readonly DIR_CURRENT="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 readonly DIR_BUILD="${DIR_CURRENT}/build/${PACKAGE_NAME}_${PACKAGE_VERSION}"
-
-# Superdirectory this script is located with /resources appended, namely src/resources
 readonly DIR_RESOURCES="$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" &>/dev/null && pwd)/resources"
-
-# Define DIR_DOWNLOADS as an absolute path
 readonly DIR_DOWNLOADS="$(dirname "${DIR_RESOURCES}")/downloads"
 
-
 clean_up_build_environment() {
+  echo "Cleaning up previous build environment..."
   rm -rf "${DIR_BUILD}"
 }
 
 init_build_environment() {
+  echo "Initializing build environment..."
   set -a
+  # Load version-specific variables from file
   . "${DIR_RESOURCES}/versions"
   set +a
   if [ ! -d "${DIR_BUILD}" ]; then
@@ -49,9 +47,10 @@ init_build_environment() {
 
 download_and_extract_i2b2_webclient() {
   local dir_webclient="${1}"
+  echo "Downloading and extracting i2b2 webclient..."
 
-  if [ ! -f "${DIR_DOWNLOADS}/v${I2B2_WEBCLIENT_VERSION}.zip" ]; then
-    echo "Download i2b2 webclient v${I2B2_WEBCLIENT_VERSION}"
+  if [[ ! -f "${DIR_DOWNLOADS}/v${I2B2_WEBCLIENT_VERSION}.zip" ]]; then
+    echo "Downloading i2b2 webclient v${I2B2_WEBCLIENT_VERSION}"
     wget "https://github.com/i2b2/i2b2-webclient/archive/v${I2B2_WEBCLIENT_VERSION}.zip" -P "${DIR_DOWNLOADS}"
   fi
 
@@ -63,24 +62,28 @@ download_and_extract_i2b2_webclient() {
 configure_i2b2_webclient() {
   local dir_webclient="${1}"
   local escaped_wildfly_host=$(printf '%s\n' "${2}" | sed 's/[\/&]/\\&/g')
+  echo "Configuring i2b2 webclient..."
 
   cp "${DIR_RESOURCES}/httpd/"* "${DIR_BUILD}${dir_webclient}/"
 
+  # Modify default login credentials
   sed -i "s|loginDefaultUsername : \"demo\"|loginDefaultUsername : \"\"|" "${DIR_BUILD}${dir_webclient}/js-i2b2/i2b2_ui_config.js"
   sed -i "s|loginDefaultPassword : \"demouser\"|loginDefaultPassword : \"\"|" "${DIR_BUILD}${dir_webclient}/js-i2b2/i2b2_ui_config.js"
 
+  # Remove unnecessary link to old I2B2 Webclient
   sed -i 's|<div class="classic">For classic i2b2 webclient click <a href="#">here</a></div>||' "${DIR_BUILD}${dir_webclient}/js-i2b2/cells/PM/assets/login.html"
 
+  # Set WildFly host configuration
   sed -i "s|__WILDFLY_HOST__|${escaped_wildfly_host}|" "${DIR_BUILD}${dir_webclient}/proxy.php"
   sed -i "s|__WILDFLY_HOST__|${escaped_wildfly_host}|" "${DIR_BUILD}${dir_webclient}/i2b2_config_domains.json"
 }
 
 download_and_extract_wildfly() {
   local dir_wildfly_home="${1}"
+  echo "Downloading and extracting WildFly..."
 
-  if [ ! -f "${DIR_DOWNLOADS}/wildfly-${WILDFLY_VERSION}.zip" ]; then
-    echo "Download WildFly ${WILDFLY_VERSION}"
-    # wget "https://download.jboss.org/wildfly/${WILDFLY_VERSION}/wildfly-${WILDFLY_VERSION}.zip"  -P "${DIR_DOWNLOADS}"
+  if [[ ! -f "${DIR_DOWNLOADS}/wildfly-${WILDFLY_VERSION}.zip" ]]; then
+    echo "Downloading WildFly ${WILDFLY_VERSION}"
     wget "https://github.com/wildfly/wildfly/releases/download/${WILDFLY_VERSION}/wildfly-${WILDFLY_VERSION}.zip" -P "${DIR_DOWNLOADS}"
   fi
 
@@ -91,44 +94,43 @@ download_and_extract_wildfly() {
 
 configure_wildfly() {
   local dir_wildfly_home="${1}"
+  echo "Configuring WildFly server..."
 
-  # Increase JVM heap size
+  # Adjust JVM heap size for better performance
   sed -i "s/-Xms64m -Xmx512m/-Xms1024m -Xmx2g/" "${DIR_BUILD}${dir_wildfly_home}/bin/appclient.conf"
   sed -i "s/-Xms64m -Xmx512m/-Xms1024m -Xmx2g/" "${DIR_BUILD}${dir_wildfly_home}/bin/standalone.conf"
 
   # Fix CVE-2021-44228 (log4j2 vulnerability)
-  echo 'JAVA_OPTS="$JAVA_OPTS -Dlog4j2.formatMsgNoLookups=true"' >>"${DIR_BUILD}${dir_wildfly_home}/bin/standalone.conf"
+  echo 'JAVA_OPTS="$JAVA_OPTS -Dlog4j2.formatMsgNoLookups=true"' >> "${DIR_BUILD}${dir_wildfly_home}/bin/standalone.conf"
 
-  # Prepare the config.cli file
-  local config_cli_template="${DIR_RESOURCES}/wildfly/config.cli"
-  local config_cli_processed="${DIR_BUILD}${dir_wildfly_home}/bin/i2b2_config.cli"
+  # Set up WildFly CLI for configuration
+  local processed_config_cli="${DIR_BUILD}${dir_wildfly_home}/bin/i2b2_config.cli"
+  sed "s/__POSTGRES_JDBC_VERSION__/${POSTGRES_JDBC_VERSION}/g" "${DIR_RESOURCES}/wildfly/i2b2_config.cli" > "${processed_config_cli}"
 
-  # Replace the placeholder in the config.cli file
-  sed "s/__POSTGRES_JDBC_VERSION__/${POSTGRES_JDBC_VERSION}/g" "${config_cli_template}" > "${config_cli_processed}"
-
-  # Run the JBoss CLI with the processed config.cli file
-  "${DIR_BUILD}${dir_wildfly_home}/bin/jboss-cli.sh" --file="${config_cli_processed}"
+  # Apply configuration via JBoss CLI
+  "${DIR_BUILD}${dir_wildfly_home}/bin/jboss-cli.sh" --file="${processed_config_cli}"
 }
 
 setup_wildfly_systemd() {
   local dir_wildfly_home="${1}"
   local dir_wildfly_config="${2}"
   local dir_systemd="${3}"
+  echo "Setting up WildFly systemd service..."
 
   mkdir -p "${DIR_BUILD}${dir_wildfly_config}" "${DIR_BUILD}${dir_systemd}"
+  # Set up systemd service for WildFly, enabling automatic startup and management
   cp "${DIR_BUILD}${dir_wildfly_home}/docs/contrib/scripts/systemd/wildfly.service" "${DIR_BUILD}${dir_systemd}/"
   cp "${DIR_BUILD}${dir_wildfly_home}/docs/contrib/scripts/systemd/wildfly.conf" "${DIR_BUILD}${dir_wildfly_config}/"
-
   echo "WILDFLY_HOME=\"${dir_wildfly_home}\"" >> "${DIR_BUILD}${dir_wildfly_config}/wildfly.conf"
-
   cp "${DIR_BUILD}${dir_wildfly_home}/docs/contrib/scripts/systemd/launch.sh" "${DIR_BUILD}${dir_wildfly_home}/bin/"
 }
 
 download_and_copy_jdbc_driver() {
   local dir_wildfly_deployments="${1}"
+  echo "Downloading and copying PostgreSQL JDBC driver..."
 
-  if [ ! -f "${DIR_DOWNLOADS}/postgresql-${POSTGRES_JDBC_VERSION}.jar" ]; then
-    echo "Download PostgreSQL JDBC ${POSTGRES_JDBC_VERSION}"
+  if [[ ! -f "${DIR_DOWNLOADS}/postgresql-${POSTGRES_JDBC_VERSION}.jar" ]]; then
+    echo "Downloading PostgreSQL JDBC ${POSTGRES_JDBC_VERSION}"
     wget "https://jdbc.postgresql.org/download/postgresql-${POSTGRES_JDBC_VERSION}.jar" -P "${DIR_DOWNLOADS}"
   fi
 
@@ -138,31 +140,32 @@ download_and_copy_jdbc_driver() {
 # TODO FIX THIS
 download_and_copy_i2b2_war() {
   local dir_wildfly_deployments="${1}"
+  echo "Downloading and copying i2b2 core WAR file..."
 
-  if [ ! -f "${DIR_DOWNLOADS}/i2b2core-upgrade-${I2B2_VERSION}.zip" ]; then
-    echo "i2b2core-upgrade-${I2B2_VERSION}.zip not found. Please download i2b2core-upgrade-${I2B2_VERSION}.zip from https://www.i2b2.org/software/index.html and move it to ${DIR_DOWNLOADS}. Afterwards re-run build." >&2
+  if [[ ! -f "${DIR_DOWNLOADS}/i2b2core-upgrade-${I2B2_VERSION}.zip" ]]; then
+    echo "i2b2core-upgrade-${I2B2_VERSION}.zip not found. Please download manually and place in ${DIR_DOWNLOADS}." >&2
     exit 1
   fi
 
-  unzip -q -j "${DIR_DOWNLOADS}/i2b2core-upgrade-${I2B2_VERSION}.zip" "i2b2/deployments/i2b2.war" \
-        -d "${DIR_BUILD}${dir_wildfly_deployments}"
+  unzip -q -j "${DIR_DOWNLOADS}/i2b2core-upgrade-${I2B2_VERSION}.zip" "i2b2/deployments/i2b2.war" -d "${DIR_BUILD}${dir_wildfly_deployments}"
 }
 
 copy_sql_scripts() {
   local dir_db="${1}"
-
+  echo "Copying SQL scripts..."
   mkdir -p "${DIR_BUILD}${dir_db}"
-  cp -r ${DIR_RESOURCES}/sql/* "${DIR_BUILD}${dir_db}"
+  cp -r "${DIR_RESOURCES}/sql/"* "${DIR_BUILD}${dir_db}"
 }
 
 copy_helper_scripts() {
   local dir_helper="${1}"
-
+  echo "Copying helper scripts..."
   mkdir -p "${DIR_BUILD}${dir_helper}"
   cp "${DIR_RESOURCES}/helper.sh" "${DIR_BUILD}${dir_helper}"
 }
 
 prepare_management_scripts_and_files() {
+  echo "Preparing management and control files for the Debian package..."
   mkdir -p "${DIR_BUILD}/DEBIAN"
 
   # Replace placeholders
@@ -180,6 +183,7 @@ prepare_management_scripts_and_files() {
 }
 
 build_package() {
+  echo "Building Debian package..."
   dpkg-deb --build "${DIR_BUILD}"
   rm -rf "${DIR_BUILD}"
 }
