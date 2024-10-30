@@ -1,28 +1,29 @@
 #!/bin/bash
 #--------------------------------------
 # Script Name:  postrm
-# Version:      1.0
+# Version:      1.1
 # Author:       skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
-# Date:         25 Oct 24
-# Purpose:      Post-removal script for 'aktin-notaufnahme-i2b2' package. It cleans up system configurations and data after package removal or purge,
-#               including deactivating PHP cURL extension, deleting WildFly remnants and user, and dropping the i2b2 database during a purge.
+# Date:         30 Oct 24
+# Purpose:      Post-removal script for 'aktin-notaufnahme-i2b2'.
+#               Executes after files are deleted. Handles cleanup of configurations and database.
 #--------------------------------------
 
 readonly OPERATION="${1}"
 
-deactivate_php_curl_extension() {
-  echo "Disabling Apache2 PHP cURL extension..."
-  sed -i "s/extension=curl/;extension=curl/g" /etc/php/*/apache2/php.ini || true
-  echo "Restarting Apache2..."
-  systemctl restart apache2 || true
+source_helper_script() {
+  local helper_path="/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/helper.sh"
+  if [[ -f "${helper_path}" ]]; then
+    . "${helper_path}"
+  else
+    echo "Error: helper.sh not found at ${helper_path}" >&2
+    exit 1
+  fi
 }
 
-delete_wildfly_remnants() {
-  echo "Deleting WildFly remnants..."
-  rm -rf /opt/wildfly/standalone/{tmp,configuration,data,log}
-  rm -f /opt/wildfly/standalone/deployments/*.{deployed,failed,isdeploying,pending}
-  rm -f /opt/wildfly/standalone/deployments/{crc,im,ont,pm,work}-ds.xml
-  echo "WildFly remnants deleted."
+deactivate_php_curl_extension() {
+  echo "Disabling Apache PHP cURL extension..."
+  sed -i "s/^extension=curl/;extension=curl/" /etc/php/*/apache2/php.ini || true
+  echo "Restarting Apache..."
 }
 
 delete_wildfly_user() {
@@ -35,60 +36,48 @@ delete_wildfly_user() {
   fi
 }
 
-connect_to_psql() {
-  . /usr/share/debconf/confmodule
-  local debconf_name
-  debconf_name=$(echo "$DPKG_MAINTSCRIPT_PACKAGE" | awk -F '-' '{print $1"-"$2}')
-
-  db_get "${debconf_name}/db_conn"
-  if [ "$RET" = "unix" ]; then
-    readonly PSQL="sudo -u postgres psql"
-    echo "Connecting to postgres via local unix socket."
-  else
-    db_get "${debconf_name}/db_host"; local host="$RET"
-    db_get "${debconf_name}/db_port"; local port="$RET"
-    db_get "${debconf_name}/db_user"; local user="$RET"
-    db_get "${debconf_name}/db_pass"; local pass="$RET"
-    readonly PSQL="psql postgresql://${user}:${pass}@${host}:${port}?sslmode=require"
-    echo "Connecting to postgres via TCP/IP to $host:$port."
-  fi
-}
-
-wait_for_psql_connection() {
-  local waitcount=0
-  while ! systemctl start postgresql 2>/dev/null; do
-    if [ "$waitcount" -lt 12 ]; then
-      echo "Database not yet installed. Waiting ..."
-      waitcount=$((waitcount + 1))
-      sleep 5
-    else
-      echo "Database not yet installed. Aborting ..."
-      exit 1
-    fi
-  done
-  systemctl enable postgresql.service
+remove_systemd_files() {
+  echo "Disabling and removing systemd service files..."
+  systemctl disable wildfly postgresql apache2 || true
+  rm -f "/lib/systemd/system/wildfly.service" "/lib/systemd/system/apache2.service" "/lib/systemd/system/postgresql.service"
+  systemctl daemon-reload
 }
 
 drop_i2b2_database() {
-  echo "Dropping i2b2 PostgreSQL database and user..."
-  eval "${PSQL} -v ON_ERROR_STOP=1" <<EOF >/dev/null
-__I2B2_DROP_STATEMENT__
-
+  source_helper_script
+  connect_to_psql
+  wait_for_psql_connection
+  if [[ $(eval "${PSQL} -l" | grep "i2b2" | wc -l) -gt 1 ]]; then
+    echo "Dropping i2b2 PostgreSQL database and user..."
+    eval "${PSQL} -v ON_ERROR_STOP=1" <<EOF >/dev/null
+    __I2B2_DROP_STATEMENT__
 EOF
+  else
+    echo "i2b2 database already removed. Skipping..."
+  fi
 }
 
 main() {
   set -euo pipefail
   case "$OPERATION" in
     remove)
+      #  Clean up tasks after a successful removal.
       deactivate_php_curl_extension
-      delete_wildfly_remnants
       delete_wildfly_user
+      remove_systemd_files
       ;;
     purge)
-      connect_to_psql
-      wait_for_psql_connection
+      # Run during a purge to delete all configuration files.
       drop_i2b2_database
+      ;;
+    abort-install)
+      # Used if installation is interrupted.
+      ;;
+    abort-upgrade)
+      # Clean up after a failed upgrade.
+      ;;
+    abort-remove)
+      # Run if removal fails or is interrupted.
       ;;
   esac
 }

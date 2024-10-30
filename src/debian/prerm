@@ -1,38 +1,40 @@
 #!/bin/bash
 #--------------------------------------
 # Script Name:  prerm
-# Version:      1.0
+# Version:      1.1
 # Author:       skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
-# Date:         25 Oct 24
-# Purpose:      Pre-removal script for 'aktin-notaufnahme-i2b2' package. It stops and disables the WildFly service before removal, and during
-#               upgrades, it removes service dependencies between WildFly and PostgreSQL.
+# Date:         30 Oct 24
+# Purpose:      Pre-removal script for 'aktin-notaufnahme-i2b2'.
+#               Executes before files are deleted or package is upgraded.
 #--------------------------------------
 
 readonly OPERATION="${1}"
+
+stop_services() {
+  local services=("wildfly" "postgresql" "apache2")
+  for service in "${services[@]}"; do
+    if systemctl is-active --quiet "${service}"; then
+      echo "Stopping ${service} service..."
+      systemctl stop "${service}"
+    else
+      echo "${service} service is already stopped."
+    fi
+  done
+}
 
 main() {
   set -euo pipefail
   case "$OPERATION" in
     remove)
-      echo "Stopping and disabling WildFly service..."
-      if systemctl is-active --quiet wildfly; then
-        systemctl stop wildfly || true
-      else
-        echo "WildFly service is not running."
-      fi
-      systemctl disable wildfly || true
-      systemctl daemon-reload
+      # Run before the package is removed.
+      stop_services
       ;;
     upgrade)
-      echo "Removing WildFly-Postgresql service dependencies..."
-      if [ -f "/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/helper.sh" ]; then
-        . "/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/helper.sh"
-        remove_entry_from_service "wildfly.service" "Requires" "postgresql.service"
-        remove_entry_from_service "wildfly.service" "After" "postgresql.service"
-        systemctl daemon-reload
-      else
-        echo "Helper script not found; skipping dependency removal."
-      fi
+      # Run before upgrading the package to a new version.
+      stop_services
+      ;;
+    deconfigure)
+      # Used when the package’s dependencies are being removed.
       ;;
   esac
 }
