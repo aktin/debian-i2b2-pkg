@@ -20,5 +20,9 @@ RUN mkdir -p /sql.d
 COPY ./sql/*sql /sql.d/
 
 # Concatenate custom SQL scripts into a single initialization script
-RUN cat /sql.d/i2b2_init.sql /sql.d/i2b2_db.sql /sql.d/update_wildfly_host.sql > /docker-entrypoint-initdb.d/init.sql && \
-    rm /sql.d/i2b2_init.sql /sql.d/i2b2_db.sql /sql.d/update_wildfly_host.sql
+RUN cat /sql.d/i2b2_init.sql \
+        /sql.d/i2b2_db.sql \
+        /sql.d/update_wildfly_host.sql > /docker-entrypoint-initdb.d/init.sql && \
+    rm /sql.d/i2b2_init.sql \
+       /sql.d/i2b2_db.sql \
+       /sql.d/update_wildfly_host.sql
