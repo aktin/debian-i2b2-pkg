@@ -24,8 +24,4 @@ Homepage: https://www.aktin.org/
 Description: I2B2 Installation for the AKTIN Emergency Department Data Warehouse
  This package installs and configures the i2b2 (Informatics for Integrating Biology
  and the Bedside) framework customized for the AKTIN Emergency Department Data
- Warehouse. It includes:
-  - Setup scripts and configuration files for i2b2 deployment.
-  - Automated installation of WildFly application server and PostgreSQL database.
-  - Deployment of the i2b2 web client for data access.
- .
+ Warehouse.

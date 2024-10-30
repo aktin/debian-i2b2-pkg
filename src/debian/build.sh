@@ -4,8 +4,8 @@
 # Version:      1.1
 # Authors:      skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
 # Date:         30 Oct 24
-# Purpose:      Automates building the Debian package for 'aktin-notaufnahme-i2b2',
-#               including setup of required resources, configurations, and dependencies.
+# Purpose:      Automates building the Debian package for 'aktin-notaufnahme-i2b2', including setup of required resources, configurations,
+#               and dependencies.
 #--------------------------------------
 
 set -euo pipefail
