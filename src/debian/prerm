@@ -22,6 +22,20 @@ stop_services() {
   done
 }
 
+backup_wildfly_logs() {
+  local log_dir="/opt/wildfly/standalone/log"
+  local backup_dir="/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/backups/wildfly_logs"
+
+  mkdir -p "${backup_dir}"
+  # Copy all logs to backup directory
+  if [ -d "${log_dir}" ]; then
+    echo "Backing up WildFly logs from ${log_dir} to ${backup_dir}..."
+    cp -r "${log_dir}/"*.log "${backup_dir}/"
+  else
+    echo "No WildFly logs found to back up."
+  fi
+}
+
 main() {
   set -euo pipefail
   case "$OPERATION" in
@@ -32,6 +46,7 @@ main() {
     upgrade)
       # Run before upgrading the package to a new version.
       stop_services
+      backup_wildfly_logs
       ;;
     deconfigure)
       # Used when the package’s dependencies are being removed.

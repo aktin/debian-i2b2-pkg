@@ -63,6 +63,24 @@ init_and_seed_i2b2_database() {
   fi
 }
 
+restore_wildfly_logs() {
+  local log_dir="/opt/wildfly/standalone/log"
+  local backup_dir="/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/backups/wildfly_logs"
+
+  mkdir -p "${log_dir}"
+  # Restore logs from backup directory if they exist
+  if [ -d "${backup_dir}" ] && [ "$(ls -A "${backup_dir}")" ]; then
+    echo "Restoring WildFly logs to ${log_dir}..."
+    cp -r "${backup_dir}/"*.log "${log_dir}/"
+    echo "WildFly logs restored."
+
+    # Remove the backup after successful restore
+    rm -rf "${backup_dir}"
+  else
+    echo "No WildFly logs to restore."
+  fi
+}
+
 # TODO: Workaround for insufficient connection handling of WildFly datasources. Replace as soon as possible.
 set_wildfly_service_dependency() {
   echo "Setting up service dependency between postgresql and wildfly ..."
@@ -88,6 +106,7 @@ main() {
       systemctl enable apache2
       init_and_seed_i2b2_database
       systemctl enable postgresql
+      restore_wildfly_logs
       set_wildfly_service_dependency
       create_wildfly_user
       systemctl enable wildfly
@@ -106,3 +125,5 @@ main() {
 }
 
 main "$@"
+
+# POSTGRES UPDATE (NEW POSTGRES VERSION)
