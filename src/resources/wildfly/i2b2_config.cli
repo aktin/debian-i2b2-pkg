@@ -1,8 +1,8 @@
 # Start an embedded server for offline manipulation of the standalone.xml configuration file
 embed-server
 
-# Increase management operation timeout to 900 seconds to prevent timeouts during configuration
-/system-property=jboss.as.management.blocking.timeout:add(value=900)
+# Increase management operation timeout to 600 seconds to prevent timeouts during configuration
+/system-property=jboss.as.management.blocking.timeout:add(value=600)
 
 # Configure the logging subsystem
 # Add a size-rotating file handler named 'srf' that writes to 'server.log',
@@ -21,8 +21,8 @@ embed-server
 /subsystem=logging/root-logger=ROOT:add-handler(name="srf")
 
 # Configure the deployment scanner subsystem
-# Increase deployment timeout to 900 seconds to allow for large deployments
-/subsystem=deployment-scanner/scanner=default:write-attribute(name="deployment-timeout", value="900")
+# Increase deployment timeout to 600 seconds to allow for large deployments
+/subsystem=deployment-scanner/scanner=default:write-attribute(name="deployment-timeout", value="600")
 
 # Configure Undertow (web server) subsystem
 # Increase maximum POST size to 1GB for both HTTP and HTTPS listeners to handle large requests
@@ -33,9 +33,8 @@ embed-server
 # Set the HTTP port to the value of 'jboss.http.port' system property, or default to 9090 if not set
 /socket-binding-group=standard-sockets/socket-binding=http:write-attribute(name=port, value="${jboss.http.port:9090}")
 
-
 # Datasource configuration for i2b2 components
-# The placeholder __POSTGRES_JDBC_VERSION__ will be replaced by the actual version from build.sh
+# Sensitive values like DB credentials and PostgreSQL JDBC version are passed as environment variables.
 
 # Add Project Management (PM) datasource
 data-source add --name=PMBootStrapDS \
