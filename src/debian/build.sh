@@ -21,10 +21,11 @@ if [[ -z "${PACKAGE_VERSION}" ]]; then
 fi
 
 # Define relevant directories as absolute paths
-readonly DIR_CURRENT="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-readonly DIR_BUILD="${DIR_CURRENT}/build/${PACKAGE_NAME}_${PACKAGE_VERSION}"
-readonly DIR_RESOURCES="$(cd "$(dirname "$(dirname "${BASH_SOURCE[0]}")")" &>/dev/null && pwd)/resources"
-readonly DIR_DOWNLOADS="$(dirname "${DIR_RESOURCES}")/downloads"
+readonly DIR_CURRENT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly DIR_SRC="$(dirname "$DIR_CURRENT")"
+readonly DIR_BUILD="${DIR_SRC}/build/${PACKAGE_NAME}_${PACKAGE_VERSION}"
+readonly DIR_RESOURCES="${DIR_SRC}/resources"
+readonly DIR_DOWNLOADS="${DIR_SRC}/downloads"
 
 clean_up_build_environment() {
   echo "Cleaning up previous build environment..."
