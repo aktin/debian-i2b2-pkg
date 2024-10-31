@@ -18,7 +18,7 @@ Depends:
   libcurl4-openssl-dev,
   libssl-dev,
   libxml2-dev
-Recommends: postgresql-__POSTGRESQL_VERSION__
+Recommends: postgresql
 Maintainer: AKTIN IT <it-support@aktin.org>
 Homepage: https://www.aktin.org/
 Description: I2B2 Installation for the AKTIN Emergency Department Data Warehouse

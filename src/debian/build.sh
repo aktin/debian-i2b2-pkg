@@ -169,7 +169,7 @@ prepare_management_scripts_and_files() {
   mkdir -p "${DIR_BUILD}/DEBIAN"
 
   # Replace placeholders
-  sed -e "s|__PACKAGE_NAME__|${PACKAGE_NAME}|g" -e "s|__PACKAGE_VERSION__|${PACKAGE_VERSION}|g" -e "s|__POSTGRESQL_VERSION__|${POSTGRESQL_VERSION}|g" "${DIR_CURRENT}/control" > "${DIR_BUILD}/DEBIAN/control"
+  sed -e "s|__PACKAGE_NAME__|${PACKAGE_NAME}|g" -e "s|__PACKAGE_VERSION__|${PACKAGE_VERSION}|g" "${DIR_CURRENT}/control" > "${DIR_BUILD}/DEBIAN/control"
   sed -e "s|__PACKAGE_NAME__|${PACKAGE_NAME}|g" "${DIR_CURRENT}/templates" > "${DIR_BUILD}/DEBIAN/templates"
   sed -e "s|__PACKAGE_NAME__|${PACKAGE_NAME}|g" "${DIR_CURRENT}/config" > "${DIR_BUILD}/DEBIAN/config"
   sed -e "s|__UBUNTU_VERSION__|${UBUNTU_VERSION}|g" "${DIR_CURRENT}/preinst" > "${DIR_BUILD}/DEBIAN/preinst"
