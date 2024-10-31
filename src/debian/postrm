@@ -10,16 +10,6 @@
 
 readonly OPERATION="${1}"
 
-source_helper_script() {
-  local helper_path="/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/helper.sh"
-  if [[ -f "${helper_path}" ]]; then
-    . "${helper_path}"
-  else
-    echo "Error: helper.sh not found at ${helper_path}" >&2
-    exit 1
-  fi
-}
-
 deactivate_php_curl_extension() {
   if grep -q "^extension=curl" /etc/php/*/apache2/php.ini; then
     echo "Disabling Apache PHP cURL extension..."
@@ -49,8 +39,27 @@ delete_wildfly_remnants() {
   echo "WildFly remnants deleted."
 }
 
+notify_user_about_services() {
+  echo "Note: The following services were installed and enabled during the installation of this package:"
+  echo "  - Apache (apache2)"
+  echo "  - PostgreSQL (postgresql)"
+  echo "These services remain untouched after the package removal. You may disable them if they are no longer needed:"
+  echo "  sudo systemctl disable apache2"
+  echo "  sudo systemctl disable postgresql"
+}
+
+source_temp_helper() {
+  local temp_helper="/tmp/${DPKG_MAINTSCRIPT_PACKAGE}_helper.sh"
+  if [[ -f "${temp_helper}" ]]; then
+    source "${temp_helper}"
+  else
+    echo "Error: Temporary helper script not found. Cannot proceed with database cleanup."
+    exit 1
+  fi
+}
+
 drop_i2b2_database() {
-  source_helper_script
+  source_temp_helper
   connect_to_psql
   wait_for_psql_connection
   if [[ $(eval "${PSQL} -l" | grep "i2b2" | wc -l) -gt 1 ]]; then
@@ -63,6 +72,10 @@ EOF
   fi
 }
 
+remove_temp_helper() {
+  rm -f "/tmp/${DPKG_MAINTSCRIPT_PACKAGE}_helper.sh"
+}
+
 main() {
   set -euo pipefail
   case "$OPERATION" in
@@ -71,10 +84,12 @@ main() {
       deactivate_php_curl_extension
       delete_wildfly_user
       delete_wildfly_remnants
+      notify_user_about_services
       ;;
     purge)
       # Run during a purge to delete all configuration files.
       drop_i2b2_database
+      remove_temp_helper
       ;;
     abort-install)
       # Used if installation is interrupted.

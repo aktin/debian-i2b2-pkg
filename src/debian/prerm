@@ -10,16 +10,9 @@
 
 readonly OPERATION="${1}"
 
-stop_services() {
-  local services=("wildfly" "postgresql" "apache2")
-  for service in "${services[@]}"; do
-    if systemctl is-active --quiet "${service}"; then
-      echo "Stopping ${service} service..."
-      systemctl stop "${service}"
-    else
-      echo "${service} service is already stopped."
-    fi
-  done
+# Creates temporary helper.sh in /tmp/ as helper.sh would be deleted before postrm and is required for database connection
+create_temp_helper() {
+  cp "/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/helper.sh" "/tmp/${DPKG_MAINTSCRIPT_PACKAGE}_helper.sh"
 }
 
 backup_wildfly_logs() {
@@ -41,11 +34,10 @@ main() {
   case "$OPERATION" in
     remove)
       # Run before the package is removed.
-      stop_services
+      create_temp_helper
       ;;
     upgrade)
       # Run before upgrading the package to a new version.
-      stop_services
       backup_wildfly_logs
       ;;
     deconfigure)
