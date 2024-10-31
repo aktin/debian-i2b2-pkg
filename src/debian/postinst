@@ -11,16 +11,6 @@
 
 readonly OPERATION="${1}"
 
-source_helper_script() {
-  local helper_path="/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/helper.sh"
-  if [[ -f "${helper_path}" ]]; then
-    . "${helper_path}"
-  else
-    echo "Error: helper.sh not found at ${helper_path}" >&2
-    exit 1
-  fi
-}
-
 check_and_start_services() {
   local services=("apache2" "postgresql" "wildfly")
   for service in "${services[@]}"; do
@@ -57,6 +47,16 @@ check_postgresql_versions() {
     echo "Warning: Multiple PostgreSQL versions detected (${pg_versions})."
     echo "Your data is still in the old PostgreSQL version. Please migrate your data to the new version."
     echo "Refer to the PostgreSQL documentation or use 'pg_upgrade' to complete the migration."
+  fi
+}
+
+source_helper_script() {
+  local helper_path="/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/helper.sh"
+  if [[ -f "${helper_path}" ]]; then
+    . "${helper_path}"
+  else
+    echo "Error: helper.sh not found at ${helper_path}" >&2
+    exit 1
   fi
 }
 
