@@ -199,7 +199,7 @@ main() {
   setup_wildfly_systemd "/opt/wildfly" "/etc/wildfly" "/lib/systemd/system"
   download_and_copy_jdbc_driver "/opt/wildfly/standalone/deployments"
   download_and_copy_i2b2_war "/opt/wildfly/standalone/deployments"
-  copy_sql_scripts "/usr/share/${PACKAGE_NAME}/database"
+  copy_sql_scripts "/usr/share/${PACKAGE_NAME}/sql"
   copy_helper_scripts "/usr/share/${PACKAGE_NAME}"
   prepare_management_scripts_and_files
   build_package
