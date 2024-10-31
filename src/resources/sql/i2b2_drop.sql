@@ -1,5 +1,5 @@
 --
--- delete database 'i2b2' with its users (needed for installation reset)
+-- Delete database 'i2b2' with its users (needed for installation reset)
 --
 
 DROP DATABASE IF EXISTS i2b2;

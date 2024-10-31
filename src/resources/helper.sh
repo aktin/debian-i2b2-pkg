@@ -1,39 +1,51 @@
 #!/bin/bash
+#--------------------------------------
+# Script Name:  helper.sh
+# Version:      1.1
+# Author:       akombeiz@ukaachen.de
+# Date:         30 Oct 24
+# Purpose:      Provides helper functions for database management tasks of maintainer scripts.
+#--------------------------------------
 
-# only for keys within [UNIT]
-function add_entry_to_service() {
-    set -euo pipefail
-    local DIR_SERVICE="/lib/systemd/system/${1}"
-    local KEY="${2}"
-    local VALUE="${3}"
-    # workaround as grep returns null if key not found which leads to an error
-    if grep -q "^${KEY}=" "${DIR_SERVICE}"; then
-        LINE="$(grep "^${KEY}=" "${DIR_SERVICE}")"
-        if [[ "${LINE}" != *"${VALUE}"* ]]; then
-            LINE+=" ${VALUE}"
-            sed -i "s/^${KEY}=.*/${LINE}/" "${DIR_SERVICE}"
-        fi
-    else
-        sed -ri "/^\[Unit\]$/a ${KEY}=${VALUE}" "${DIR_SERVICE}"
-    fi
+connect_to_psql() {
+  # Source the Debconf configuration module
+  . /usr/share/debconf/confmodule
+
+  # Extract the base name for Debconf settings (e.g., package name prefix)
+  local debconf_name
+  debconf_name="$(echo "${DPKG_MAINTSCRIPT_PACKAGE}" | awk -F '-' '{print $1"-"$2}')"
+
+  # Retrieve connection type from Debconf and set up the PSQL command accordingly
+  db_get "${debconf_name}/db_conn"
+  if [[ "${RET}" == "unix" ]]; then
+    readonly PSQL="sudo -u postgres psql"
+    echo "Connecting to PostgreSQL via local UNIX socket."
+  else
+    # Retrieve connection details from Debconf and construct the PSQL command for TCP/IP
+    local host port user pass
+    db_get "${debconf_name}/db_host"; host="${RET}"
+    db_get "${debconf_name}/db_port"; port="${RET}"
+    db_get "${debconf_name}/db_user"; user="${RET}"
+    db_get "${debconf_name}/db_pass"; pass="${RET}"
+
+    export PSQL="psql postgresql://${user}:${pass}@${host}:${port}?sslmode=require"
+    echo "Connecting to PostgreSQL via TCP/IP at ${host}:${port}."
+  fi
 }
 
-# only for keys within [UNIT]
-function remove_entry_from_service() {
-    set -euo pipefail
-    local DIR_SERVICE="/lib/systemd/system/${1}"
-    local KEY="${2}"
-    local VALUE="${3}"
-    # workaround as grep returns null if key not found which leads to an error
-    if grep -q "^${KEY}=" "${DIR_SERVICE}"; then
-        LINE=$(grep "^${KEY}=" "${DIR_SERVICE}")
-        if [[ "${LINE}" == *"${VALUE}"* ]]; then
-            LINE="$(echo ${LINE} | sed -e "s/${VALUE}//")"
-            if [[ -z "$(cut -d'=' -f2 <<<${LINE})" ]]; then
-                sed -i "/^${KEY}=.*/d" "${DIR_SERVICE}"
-            else
-                sed -i "s/^${KEY}=.*/${LINE}/" "${DIR_SERVICE}"
-            fi
-        fi
+wait_for_psql_connection() {
+  local wait_count=0
+  local max_retries=12
+  local retry_interval=5
+
+  while ! systemctl start postgresql 2>/dev/null; do
+    if (( wait_count < max_retries )); then
+      echo "Database not yet available. Retrying in ${retry_interval} seconds..."
+      wait_count=$((wait_count + 1))
+      sleep "${retry_interval}"
+    else
+      echo "Database could not be started after ${max_retries} attempts. Aborting..."
+      exit 1
     fi
+  done
 }

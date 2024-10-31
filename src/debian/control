@@ -1,9 +1,27 @@
-Package: __PACKAGE__
-Version: __VERSION__
+Package: __PACKAGE_NAME__
+Version: __PACKAGE_VERSION__
 Section: science
 Priority: optional
 Architecture: all
-Depends: debconf (>= 0.2.26), curl, sudo, libpq-dev, software-properties-common, openjdk-11-jre-headless, apache2, php, php-common, libapache2-mod-php, php-curl, libcurl4-openssl-dev, libssl-dev, libxml2-dev
+Depends:
+  debconf (>= 0.2.26),
+  curl,
+  sudo,
+  libpq-dev,
+  software-properties-common,
+  openjdk-11-jre-headless,
+  apache2,
+  php,
+  php-common,
+  libapache2-mod-php,
+  php-curl,
+  libcurl4-openssl-dev,
+  libssl-dev,
+  libxml2-dev
 Recommends: postgresql
 Maintainer: AKTIN IT <it-support@aktin.org>
-Description: I2B2 Installation für das AKTIN Datawarehouse in Notaufnahmen
+Homepage: https://www.aktin.org/
+Description: I2B2 Installation for the AKTIN Emergency Department Data Warehouse
+ This package installs and configures the i2b2 (Informatics for Integrating Biology
+ and the Bedside) framework customized for the AKTIN Emergency Department Data
+ Warehouse.

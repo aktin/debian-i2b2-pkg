@@ -1,12 +1,15 @@
 #!/bin/bash
+#--------------------------------------
+# Script Name:  clean.sh
+# Version:      1.1
+# Authors:      skurka@ukaachen.de, akombeiz@ukaachen.de
+# Date:         30 Oct 24
+# Purpose:      Cleans up i2b2 Debian package build directories.
+#--------------------------------------
+
 set -euo pipefail
 
-# namely src/
-readonly DIR_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+# Define the root directory of the script
+readonly DIR_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
-function main() {
-    set -euo pipefail
-    rm -rf "${DIR_ROOT}/debian/build" "${DIR_ROOT}/docker/build"
-}
-
-main
+rm -rf "${DIR_ROOT}/debian/build"

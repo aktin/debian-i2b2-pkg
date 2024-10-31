@@ -1,5 +1,5 @@
 --
--- create new database 'i2b2' with its users
+-- Create new database 'i2b2' with its users
 --
 
 CREATE DATABASE i2b2;

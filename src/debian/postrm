@@ -1,57 +1,101 @@
 #!/bin/bash
-set -euo pipefail
+#--------------------------------------
+# Script Name:  postrm
+# Version:      1.1
+# Author:       skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
+# Date:         30 Oct 24
+# Purpose:      Cleans up configurations, user accounts, and remnants of 'aktin-notaufnahme-i2b2' post-removal, notifies users about remaining
+#               services, and performs database removal on purge.
+#--------------------------------------
 
 readonly OPERATION="${1}"
 
-function deactivate_php_curl_extension() {
-    echo "Disabling apache2 php-curl extension ..."
-    sed -i "s/extension=curl/;extension=curl/g" /etc/php/*/apache2/php.ini || true
-    systemctl restart apache2 || true
+deactivate_php_curl_extension() {
+  if grep -q "^extension=curl" /etc/php/*/apache2/php.ini; then
+    echo "Disabling Apache PHP cURL extension..."
+    sed -i "s/^extension=curl/;extension=curl/" /etc/php/*/apache2/php.ini
+    echo "Restarting Apache..."
+    systemctl restart apache2
+  else
+    echo "Apache PHP cURL extension is already disabled."
+  fi
 }
 
-function enable_psql_updates() {
-    echo -e "Enabling postgresql-12 unattendend-upgrades ..."
-    sed -i "/Package: postgresql-12/{N;N;d;}" /etc/apt/preferences.d/official-package-repositories.pref
+delete_wildfly_user() {
+  echo "Deleting WildFly user..."
+  if id -u wildfly >/dev/null 2>&1; then
+    deluser --remove-home wildfly
+    echo "WildFly user deleted."
+  else
+    echo "WildFly user does not exist."
+  fi
 }
 
-function delete_wildfly_remnants() {
-    echo -e "Deleting remnants of wildfly ..."
-    rm -rf /opt/wildfly/standalone/{tmp,configuration,data,log}
-    rm -f /opt/wildfly/standalone/deployments/*.{deployed,failed,isdeploying,pending}
-    rm -f /opt/wildfly/standalone/deployments/{crc,im,ont,pm,work}-ds.xml
+delete_wildfly_remnants() {
+  echo "Deleting WildFly remnants..."
+  rm -rf /opt/wildfly/standalone/{tmp,configuration,data,log}
+  rm -f /opt/wildfly/standalone/deployments/*.{deployed,failed,isdeploying,pending}
+  rm -f /etc/wildfly/wildfly.conf
+  echo "WildFly remnants deleted."
 }
 
-function delete_wildfly_user() {
-    echo -e "Deleting wildfly user..."
-    if id -u wildfly &>/dev/null; then
-        deluser --remove-home --force wildfly
-    else
-        echo -e "User wildfly is already deleted"
-    fi
+notify_user_about_services() {
+  echo "Note: The following services were installed and enabled during the installation of this package:"
+  echo "  - Apache (apache2)"
+  echo "  - PostgreSQL (postgresql)"
+  echo "These services remain untouched after the package removal. You may disable them if they are no longer needed:"
+  echo "  sudo systemctl disable apache2"
+  echo "  sudo systemctl disable postgresql"
 }
 
-function drop_i2b2_database() {
-    echo "Dropping I2B2 database ..."
-    eval "sudo -u postgres psql -v ON_ERROR_STOP=1" <<EOF >/dev/null
-__I2B2_DROP__
+source_temp_helper() {
+  local temp_helper="/tmp/${DPKG_MAINTSCRIPT_PACKAGE}_helper.sh"
+  if [[ -f "${temp_helper}" ]]; then
+    source "${temp_helper}"
+  else
+    echo "Error: Temporary helper script not found. Cannot proceed with database cleanup."
+    exit 1
+  fi
+}
 
+drop_i2b2_database() {
+  if ! command -v psql >/dev/null 2>&1 || ! systemctl is-active --quiet postgresql; then
+    echo "PostgreSQL is not installed or active. Skipping i2b2 database drop."
+    return
+  fi
+  source_temp_helper
+  connect_to_psql
+  wait_for_psql_connection
+  if [[ $(eval "${PSQL} -l" | grep "i2b2" | wc -l) -gt 1 ]]; then
+    echo "Dropping i2b2 PostgreSQL database and user..."
+    eval "${PSQL} -v ON_ERROR_STOP=1" <<EOF >/dev/null
+__I2B2_DROP_STATEMENT__
 EOF
-    db_purge
+  else
+    echo "i2b2 database already removed. Skipping..."
+  fi
 }
 
-function main() {
-    set -euo pipefail
-    case "${OPERATION}" in
+remove_temp_helper() {
+  rm -f "/tmp/${DPKG_MAINTSCRIPT_PACKAGE}_helper.sh"
+}
+
+main() {
+  set -euo pipefail
+  case "$OPERATION" in
     remove)
-        deactivate_php_curl_extension
-        enable_psql_updates
-        delete_wildfly_remnants
-        delete_wildfly_user
-        ;;
+      # Runs during package removal after files have been deleted.
+      deactivate_php_curl_extension
+      delete_wildfly_user
+      delete_wildfly_remnants
+      notify_user_about_services
+      ;;
     purge)
-        drop_i2b2_database
-        ;;
-    esac
+      # Runs during a purge after 'postrm remove' to delete all leftover files.
+      drop_i2b2_database
+      remove_temp_helper
+      ;;
+  esac
 }
 
-main
+main "$@"
