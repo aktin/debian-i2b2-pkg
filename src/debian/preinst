@@ -10,6 +10,14 @@
 
 readonly OPERATION="${1}"
 
+check_ubuntu_version() {
+  local ubuntu_version
+  ubuntu_version=$(lsb_release -rs)
+  if [[ "${ubuntu_version}" != "__UBUNTU_VERSION__" ]]; then
+    echo "Warning: This package is optimized for Ubuntu __UBUNTU_VERSION__. Detected version: ${ubuntu_version}"
+  fi
+}
+
 check_dependencies() {
   echo "Checking required services..."
   local required_services=("postgresql" "apache2")
@@ -27,10 +35,12 @@ main() {
   case "$OPERATION" in
     install)
       # Runs before the package is installed for the first time.
+      check_ubuntu_version
       check_dependencies
       ;;
     upgrade)
       # Runs before upgrading the package to a new version.
+      check_ubuntu_version
       check_dependencies
       ;;
     abort-upgrade)
