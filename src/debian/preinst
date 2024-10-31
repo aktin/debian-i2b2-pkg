@@ -4,17 +4,20 @@
 # Version:      1.0
 # Authors:      akombeiz@ukaachen.de
 # Date:         30 Oct 24
-# Purpose:      Pre-installation script for 'aktin-notaufnahme-i2b2'.
-#               Checks for dependencies, prepares backups, and stops conflicting services if upgrading.
+# Purpose:      Verifies compatibility with Ubuntu version.
 #--------------------------------------
 
 readonly OPERATION="${1}"
 
 check_ubuntu_version() {
   local ubuntu_version
-  ubuntu_version=$(lsb_release -rs)
-  if [[ "${ubuntu_version}" != "__UBUNTU_VERSION__" ]]; then
-    echo "Warning: This package is optimized for Ubuntu __UBUNTU_VERSION__. Detected version: ${ubuntu_version}"
+  if command -v lsb_release &>/dev/null; then
+    ubuntu_version=$(lsb_release -rs)
+    if [[ "${ubuntu_version}" != "__REQUIRED_UBUNTU_VERSION__" ]]; then
+      echo "Warning: This package is optimized for Ubuntu __REQUIRED_UBUNTU_VERSION__. Detected version: ${ubuntu_version}."
+    fi
+  else
+    echo "Warning: lsb_release command not found; unable to verify Ubuntu version."
   fi
 }
 
@@ -22,18 +25,12 @@ main() {
   set -euo pipefail
   case "$OPERATION" in
     install)
-      # Runs before the package is installed for the first time.
+      # Runs during installation before files have been unpacked.
       check_ubuntu_version
       ;;
     upgrade)
-      # Runs before upgrading the package to a new version.
+      # Runs during package upgrade before files have been unpacked.
       check_ubuntu_version
-      ;;
-    abort-upgrade)
-      # Used if an upgrade fails and needs rollback steps.
-      ;;
-    abort-install)
-      # Runs if the initial installation is interrupted or fails.
       ;;
   esac
 }

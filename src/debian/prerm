@@ -4,20 +4,28 @@
 # Version:      1.1
 # Author:       skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
 # Date:         30 Oct 24
-# Purpose:      Pre-removal script for 'aktin-notaufnahme-i2b2'.
-#               Executes before files are deleted or package is upgraded.
+# Purpose:      Creates a temporary helper for post-removal database tasks, and backs up WildFly logs during upgrade to ensure essential data and
+#               configurations are preserved.
 #--------------------------------------
 
 readonly OPERATION="${1}"
 
 # Creates temporary helper.sh in /tmp/ as helper.sh would be deleted before postrm and is required for database connection
 create_temp_helper() {
-  cp "/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/helper.sh" "/tmp/${DPKG_MAINTSCRIPT_PACKAGE}_helper.sh"
+  local helper_src="/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/helper.sh"
+  local helper_dest="/tmp/${DPKG_MAINTSCRIPT_PACKAGE}_helper.sh"
+
+  if [[ -f "${helper_src}" ]]; then
+    cp "${helper_src}" "${helper_dest}"
+    echo "Temporary helper script created at ${helper_dest}."
+  else
+    echo "Warning: helper.sh not found at ${helper_src}; skipping creation of temporary helper."
+  fi
 }
 
 backup_wildfly_logs() {
   local log_dir="/opt/wildfly/standalone/log"
-  local backup_dir="/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/backups/wildfly_logs"
+  local backup_dir="/var/backups/${DPKG_MAINTSCRIPT_PACKAGE}/wildfly_logs"
 
   mkdir -p "${backup_dir}"
   # Copy all logs to backup directory
@@ -33,15 +41,12 @@ main() {
   set -euo pipefail
   case "$OPERATION" in
     remove)
-      # Run before the package is removed.
+      # Runs during package removal before files are deleted.
       create_temp_helper
       ;;
     upgrade)
-      # Run before upgrading the package to a new version.
+      # Runs during package upgrade before installation of new package.
       backup_wildfly_logs
-      ;;
-    deconfigure)
-      # Used when the package’s dependencies are being removed.
       ;;
   esac
 }

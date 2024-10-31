@@ -4,9 +4,9 @@
 # Version:      1.1
 # Authors:      skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
 # Date:         30 Oct 24
-# Purpose:      Post-installation script for 'aktin-notaufnahme-i2b2'.
-#               Executes after files are unpacked, configuring services, initializing the i2b2 database,
-#               setting up users and permissions, and ensuring all components are enabled and operational.
+# Purpose:      Ensures proper setup of 'aktin-notaufnahme-i2b2' after installation, configuring and starting services, initializing the i2b2
+#               database, enabling PHP extensions, checking PostgreSQL versions, restoring logs, and setting dependencies to make all components
+#               fully operational.
 #--------------------------------------
 
 readonly OPERATION="${1}"
@@ -135,7 +135,7 @@ main() {
   set -euo pipefail
   case "$OPERATION" in
     configure)
-      # Run after installation or upgrade to complete configuration.
+      # Runs during installation/upgrade after files have been unpacked.
       check_and_start_services
       activate_php_curl_extension
       systemctl enable apache2
@@ -147,15 +147,6 @@ main() {
       create_wildfly_user
       systemctl enable wildfly
       systemctl daemon-reload
-      ;;
-    abort-upgrade)
-      # Used to revert changes if an upgrade fails.
-      ;;
-    abort-remove)
-      # Handle tasks if a package removal is interrupted.
-      ;;
-    abort-deconfigure)
-      # Used if a deconfiguration operation fails.
       ;;
   esac
 }
