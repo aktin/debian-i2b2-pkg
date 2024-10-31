@@ -61,10 +61,7 @@ download_and_extract_i2b2_webclient() {
 
 configure_i2b2_webclient() {
   local dir_webclient="${1}"
-  local escaped_wildfly_host=$(printf '%s\n' "${2}" | sed 's/[\/&]/\\&/g')
   echo "Configuring i2b2 webclient..."
-
-  cp "${DIR_RESOURCES}/httpd/"* "${DIR_BUILD}${dir_webclient}/"
 
   # Modify default login credentials
   sed -i "s|loginDefaultUsername : \"demo\"|loginDefaultUsername : \"\"|" "${DIR_BUILD}${dir_webclient}/js-i2b2/i2b2_ui_config.js"
@@ -73,9 +70,8 @@ configure_i2b2_webclient() {
   # Remove unnecessary link to old I2B2 Webclient
   sed -i 's|<div class="classic">For classic i2b2 webclient click <a href="#">here</a></div>||' "${DIR_BUILD}${dir_webclient}/js-i2b2/cells/PM/assets/login.html"
 
-  # Set WildFly host configuration
-  sed -i "s|__WILDFLY_HOST__|${escaped_wildfly_host}|" "${DIR_BUILD}${dir_webclient}/proxy.php"
-  sed -i "s|__WILDFLY_HOST__|${escaped_wildfly_host}|" "${DIR_BUILD}${dir_webclient}/i2b2_config_domains.json"
+  # Set host configuration
+  cp "${DIR_RESOURCES}/httpd/i2b2_config_domains.json" "${DIR_BUILD}${dir_webclient}/i2b2_config_domains.json"
 }
 
 download_and_extract_wildfly() {
@@ -194,7 +190,7 @@ main() {
   clean_up_build_environment
   init_build_environment
   download_and_extract_i2b2_webclient "/var/www/html/webclient"
-  configure_i2b2_webclient "/var/www/html/webclient" "localhost"
+  configure_i2b2_webclient "/var/www/html/webclient"
   download_and_extract_wildfly "/opt/wildfly"
   configure_wildfly "/opt/wildfly"
   setup_wildfly_systemd "/opt/wildfly" "/etc/wildfly" "/lib/systemd/system"
