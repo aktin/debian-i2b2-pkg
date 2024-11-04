@@ -9,5 +9,5 @@
 
 set -euo pipefail
 
-readonly DIR_CURRENT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-rm -rf "${DIR_CURRENT}/debian/build"
+dir_current="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+rm -rf "${dir_current}/debian/build"

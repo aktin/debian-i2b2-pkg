@@ -17,5 +17,5 @@ if [[ -z "${VERSION}" ]]; then
   exit 1
 fi
 
-readonly DIR_CURRENT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${DIR_CURRENT}/debian/build.sh" "${VERSION}"
+dir_current="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${dir_current}/debian/build.sh" "${VERSION}"
