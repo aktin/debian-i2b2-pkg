@@ -51,7 +51,7 @@ To disable them if no longer needed:
 EOF
 }
 
-ource_temp_helper() {
+source_temp_helper() {
   echo "Loading temporary helper script..."
   local temp_helper="/tmp/${DPKG_MAINTSCRIPT_PACKAGE}_helper.sh"
   if [[ ! -f "${temp_helper}" ]]; then
