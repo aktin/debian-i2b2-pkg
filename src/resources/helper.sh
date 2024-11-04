@@ -2,7 +2,7 @@
 #--------------------------------------
 # Script Name:  helper.sh
 # Version:      1.1
-# Author:       akombeiz@ukaachen.de
+# Authors:       akombeiz@ukaachen.de
 # Date:         30 Oct 24
 # Purpose:      Provides helper functions for database management tasks of maintainer scripts.
 #--------------------------------------
@@ -37,15 +37,25 @@ wait_for_psql_connection() {
   local wait_count=0
   local max_retries=12
   local retry_interval=5
+  local timeout=60
 
-  while ! systemctl start postgresql 2>/dev/null; do
-    if (( wait_count < max_retries )); then
-      echo "Database not yet available. Retrying in ${retry_interval} seconds..."
+  echo "Waiting for PostgreSQL to be ready..."
+    while true; do
+      if systemctl is-active --quiet postgresql; then
+        # Verify actual connection
+        if eval "${PSQL} -c '\l' >/dev/null 2>&1"; then
+          echo "Successfully connected to PostgreSQL."
+          return 0
+        fi
+      fi
+
+      if ((wait_count >= max_retries)); then
+        echo "Error: Database connection timeout after ${timeout} seconds." >&2
+        return 1
+      fi
+
+      echo "Database not ready. Retrying in ${retry_interval} seconds... (Attempt ${wait_count}/${max_retries})"
       wait_count=$((wait_count + 1))
       sleep "${retry_interval}"
-    else
-      echo "Database could not be started after ${max_retries} attempts. Aborting..."
-      exit 1
-    fi
-  done
+    done
 }

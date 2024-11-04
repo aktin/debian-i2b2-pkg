@@ -2,7 +2,7 @@
 #--------------------------------------
 # Script Name:  prerm
 # Version:      1.1
-# Author:       skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
+# Authors:      skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
 # Date:         30 Oct 24
 # Purpose:      Creates a temporary helper for post-removal database tasks, and backs up WildFly logs during upgrade to ensure essential data and
 #               configurations are preserved.

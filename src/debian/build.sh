@@ -1,6 +1,6 @@
 #!/bin/bash
 #--------------------------------------
-# Script Name:  build_aktin_i2b2.sh
+# Script Name:  build.sh
 # Version:      1.1
 # Authors:      skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
 # Date:         30 Oct 24

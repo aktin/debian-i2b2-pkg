@@ -2,7 +2,7 @@
 #--------------------------------------
 # Script Name:  postrm
 # Version:      1.1
-# Author:       skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
+# Authors:      skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
 # Date:         30 Oct 24
 # Purpose:      Cleans up configurations, user accounts, and remnants of 'aktin-notaufnahme-i2b2' post-removal, notifies users about remaining
 #               services, and performs database removal on purge.
