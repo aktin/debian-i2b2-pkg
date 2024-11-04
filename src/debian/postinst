@@ -15,37 +15,40 @@ check_and_start_services() {
   local services=("apache2" "postgresql" "wildfly")
   local max_retries=5
   local retry_delay=5
+  echo "Starting required services..."
 
   for service in "${services[@]}"; do
-    echo "Checking service ${service}..."
+    if systemctl is-active --quiet "${service}"; then
+      continue
+    fi
+
     for ((i=1; i<=max_retries; i++)); do
+      systemctl start "${service}"
+      sleep "${retry_delay}"
       if systemctl is-active --quiet "${service}"; then
-        echo "Service ${service} is running."
         break
       fi
       if [ "$i" -eq "$max_retries" ]; then
-        echo "Error: Failed to start ${service} after ${max_retries} attempts." >&2
+        echo "Error: Failed to start ${service} after ${max_retries} attempts" >&2
         exit 1
       fi
-      echo "Starting ${service}, attempt ${i}/${max_retries}..."
-      systemctl start "${service}"
-      sleep "${retry_delay}"
+      echo "Retry ${i}/${max_retries} for ${service}"
     done
   done
 }
 
 activate_php_curl_extension() {
-  if grep -q ";extension=curl" /etc/php/*/apache2/php.ini; then
-    echo "Enabling apache2 php-curl extension ..."
+  echo "Configuring PHP curl extension..."
+  if ! grep -q "^extension=curl" /etc/php/*/apache2/php.ini; then
     sed -i "s/;extension=curl/extension=curl/" /etc/php/*/apache2/php.ini
-    echo "Restarting apache2 ..."
     systemctl restart apache2
   else
-    echo "apache2 php-curl extension already enabled."
+    echo "PHP curl extension already active"
   fi
 }
 
 check_postgresql_versions() {
+  echo "Checking PostgreSQL versions..."
   local pg_versions
   pg_versions=$(pg_lsclusters | awk '/^ / {print $1}' | sort -n | uniq)
 
@@ -58,43 +61,41 @@ check_postgresql_versions() {
 
 source_helper_script() {
   local helper_path="/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/helper.sh"
-  if [[ -f "${helper_path}" ]]; then
-    . "${helper_path}"
-  else
+  echo "Loading helper script..."
+  if [[ ! -f "${helper_path}" ]]; then
     echo "Error: helper.sh not found at ${helper_path}" >&2
     exit 1
   fi
+  . "${helper_path}"
 }
 
 init_and_seed_i2b2_database() {
   source_helper_script
   connect_to_psql
   wait_for_psql_connection
+  echo "Initializing i2b2 database..."
+
   if [[ $(eval "${PSQL} -l" | grep "i2b2" | wc -l) == 0 ]]; then
-    echo "Creating i2b2 database and users ..."
     eval "${PSQL} -v ON_ERROR_STOP=1 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/sql/i2b2_init.sql" >/dev/null
-    echo "Seeding i2b2 database ..."
     eval "${PSQL} -v ON_ERROR_STOP=1 -d i2b2 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/sql/i2b2_db.sql" >/dev/null
   else
-    echo "i2b2 database already exists. Skipping ..."
+    echo "Database i2b2 already exists"
   fi
 }
 
 restore_wildfly_logs() {
+  echo "Restoring WildFly logs..."
   local log_dir="/opt/wildfly/standalone/log"
   local backup_dir="/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/backups/wildfly_logs"
 
   mkdir -p "${log_dir}"
   # Restore logs from backup directory if they exist
   if [ -d "${backup_dir}" ] && [ "$(ls -A "${backup_dir}")" ]; then
-    echo "Restoring WildFly logs to ${log_dir}..."
     cp -r "${backup_dir}/"*.log "${log_dir}/"
-    echo "WildFly logs restored."
-
     # Remove the backup after successful restore
     rm -rf "${backup_dir}"
   else
-    echo "No WildFly logs to restore."
+    echo "No logs to restore"
   fi
 }
 
@@ -131,10 +132,14 @@ set_wildfly_service_dependency() {
 }
 
 create_wildfly_user() {
-  echo "Creating wildfly user and setting up permissions ..."
-  id -u wildfly >/dev/null || adduser --system --group --disabled-login --home /var/lib/wildfly wildfly
-  chown -R wildfly:wildfly /opt/wildfly
-  chown wildfly:wildfly /opt/wildfly/standalone/deployments/*
+  echo "Setting up WildFly user..."
+  if ! id -u wildfly >/dev/null 2>&1; then
+    adduser --system --group --disabled-login --home /var/lib/wildfly wildfly
+    chown -R wildfly:wildfly /opt/wildfly
+    chown wildfly:wildfly /opt/wildfly/standalone/deployments/*
+  else
+    echo "WildFly user already exists"
+  fi
 }
 
 main() {

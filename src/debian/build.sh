@@ -48,15 +48,16 @@ init_build_environment() {
 
 download_and_extract_i2b2_webclient() {
   local dir_webclient="${1}"
-  echo "Downloading and extracting i2b2 webclient..."
+  echo "Downloading i2b2 webclient v${I2B2_WEBCLIENT_VERSION}..."
 
-  if [[ ! -f "${DIR_DOWNLOADS}/v${I2B2_WEBCLIENT_VERSION}.zip" ]]; then
-    echo "Downloading i2b2 webclient v${I2B2_WEBCLIENT_VERSION}"
+  if [[ -f "${DIR_DOWNLOADS}/v${I2B2_WEBCLIENT_VERSION}.zip" ]]; then
+    echo "Using cached webclient download"
+  else
     wget "https://github.com/i2b2/i2b2-webclient/archive/v${I2B2_WEBCLIENT_VERSION}.zip" -P "${DIR_DOWNLOADS}"
   fi
 
-  unzip -q "${DIR_DOWNLOADS}/v${I2B2_WEBCLIENT_VERSION}.zip" -d "${DIR_BUILD}"
   mkdir -p "$(dirname "${DIR_BUILD}${dir_webclient}")"
+  unzip -q "${DIR_DOWNLOADS}/v${I2B2_WEBCLIENT_VERSION}.zip" -d "${DIR_BUILD}"
   mv "${DIR_BUILD}/i2b2-webclient-${I2B2_WEBCLIENT_VERSION}" "${DIR_BUILD}${dir_webclient}"
 }
 
@@ -77,15 +78,16 @@ configure_i2b2_webclient() {
 
 download_and_extract_wildfly() {
   local dir_wildfly_home="${1}"
-  echo "Downloading and extracting WildFly..."
+  echo "Downloading WildFly ${WILDFLY_VERSION}..."
 
-  if [[ ! -f "${DIR_DOWNLOADS}/wildfly-${WILDFLY_VERSION}.zip" ]]; then
-    echo "Downloading WildFly ${WILDFLY_VERSION}"
+  if [[ -f "${DIR_DOWNLOADS}/wildfly-${WILDFLY_VERSION}.zip" ]]; then
+    echo "Using cached WildFly download"
+  else
     wget "https://github.com/wildfly/wildfly/releases/download/${WILDFLY_VERSION}/wildfly-${WILDFLY_VERSION}.zip" -P "${DIR_DOWNLOADS}"
   fi
 
-  unzip -q "${DIR_DOWNLOADS}/wildfly-${WILDFLY_VERSION}.zip" -d "${DIR_BUILD}"
   mkdir -p "$(dirname "${DIR_BUILD}${dir_wildfly_home}")"
+  unzip -q "${DIR_DOWNLOADS}/wildfly-${WILDFLY_VERSION}.zip" -d "${DIR_BUILD}"
   mv "${DIR_BUILD}/wildfly-${WILDFLY_VERSION}" "${DIR_BUILD}${dir_wildfly_home}"
 }
 
@@ -124,10 +126,11 @@ setup_wildfly_systemd() {
 
 download_and_copy_jdbc_driver() {
   local dir_wildfly_deployments="${1}"
-  echo "Downloading and copying PostgreSQL JDBC driver..."
+  echo "Downloading PostgreSQL JDBC driver ${POSTGRES_JDBC_VERSION}..."
 
-  if [[ ! -f "${DIR_DOWNLOADS}/postgresql-${POSTGRES_JDBC_VERSION}.jar" ]]; then
-    echo "Downloading PostgreSQL JDBC ${POSTGRES_JDBC_VERSION}"
+  if [[ -f "${DIR_DOWNLOADS}/postgresql-${POSTGRES_JDBC_VERSION}.jar" ]]; then
+    echo "Using cached JDBC driver"
+  else
     wget "https://jdbc.postgresql.org/download/postgresql-${POSTGRES_JDBC_VERSION}.jar" -P "${DIR_DOWNLOADS}"
   fi
 
@@ -137,10 +140,11 @@ download_and_copy_jdbc_driver() {
 # TODO FIX THIS
 download_and_copy_i2b2_war() {
   local dir_wildfly_deployments="${1}"
-  echo "Downloading and copying i2b2 core WAR file..."
+  echo "Processing i2b2 core WAR file..."
 
   if [[ ! -f "${DIR_DOWNLOADS}/i2b2core-upgrade-${I2B2_VERSION}.zip" ]]; then
-    echo "i2b2core-upgrade-${I2B2_VERSION}.zip not found. Please download manually and place in ${DIR_DOWNLOADS}." >&2
+    echo "Error: i2b2core-upgrade-${I2B2_VERSION}.zip not found in ${DIR_DOWNLOADS}" >&2
+    echo "Please download manually and place in downloads directory" >&2
     exit 1
   fi
 
@@ -162,7 +166,7 @@ copy_helper_scripts() {
 }
 
 prepare_management_scripts_and_files() {
-  echo "Preparing management and control files for the Debian package..."
+  echo "Preparing Debian package management files..."
   mkdir -p "${DIR_BUILD}/DEBIAN"
 
   # Replace placeholders
