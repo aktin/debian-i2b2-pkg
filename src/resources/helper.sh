@@ -2,7 +2,7 @@
 #--------------------------------------
 # Script Name:  helper.sh
 # Version:      1.1
-# Authors:       akombeiz@ukaachen.de
+# Authors:      akombeiz@ukaachen.de
 # Date:         30 Oct 24
 # Purpose:      Provides helper functions for database management tasks of maintainer scripts.
 #--------------------------------------

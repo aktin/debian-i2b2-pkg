@@ -13,19 +13,25 @@ readonly OPERATION="${1}"
 
 check_and_start_services() {
   local services=("apache2" "postgresql" "wildfly")
+  local max_retries=5
+  local retry_delay=5
+
   for service in "${services[@]}"; do
-    if ! systemctl is-active --quiet "${service}"; then
-      echo "Service ${service} is not running. Starting ${service}..."
-      systemctl start "${service}"
-      if ! systemctl is-active --quiet "${service}"; then
-        echo "Error: Failed to start ${service}." >&2
+    echo "Checking service ${service}..."
+    for ((i=1; i<=max_retries; i++)); do
+      if systemctl is-active --quiet "${service}"; then
+        echo "Service ${service} is running."
+        break
+      fi
+      if [ "$i" -eq "$max_retries" ]; then
+        echo "Error: Failed to start ${service} after ${max_retries} attempts." >&2
         exit 1
       fi
-    else
-      echo "Service ${service} is already running."
-    fi
+      echo "Starting ${service}, attempt ${i}/${max_retries}..."
+      systemctl start "${service}"
+      sleep "${retry_delay}"
+    done
   done
-  echo "All services are running."
 }
 
 activate_php_curl_extension() {

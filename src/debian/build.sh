@@ -22,7 +22,7 @@ fi
 
 # Define relevant directories as absolute paths
 readonly DIR_CURRENT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly DIR_SRC="$(dirname "$DIR_CURRENT")"
+readonly DIR_SRC="$(dirname "${DIR_CURRENT}")"
 readonly DIR_BUILD="${DIR_SRC}/build/${PACKAGE_NAME}_${PACKAGE_VERSION}"
 readonly DIR_RESOURCES="${DIR_SRC}/resources"
 readonly DIR_DOWNLOADS="${DIR_SRC}/downloads"
@@ -38,10 +38,10 @@ init_build_environment() {
   # Load version-specific variables from file
   . "${DIR_RESOURCES}/versions"
   set +a
-  if [ ! -d "${DIR_BUILD}" ]; then
+  if [[ ! -d "${DIR_BUILD}" ]]; then
     mkdir -p "${DIR_BUILD}"
   fi
-  if [ ! -d "${DIR_DOWNLOADS}" ]; then
+  if [[ ! -d "${DIR_DOWNLOADS}" ]]; then
     mkdir -p "${DIR_DOWNLOADS}"
   fi
 }
