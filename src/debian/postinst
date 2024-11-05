@@ -11,30 +11,14 @@
 
 readonly OPERATION="${1}"
 
-check_and_start_services() {
-  local services=("apache2" "postgresql" "wildfly")
-  local max_retries=5
-  local retry_delay=5
-  echo "Starting required services..."
-
-  for service in "${services[@]}"; do
-    if systemctl is-active --quiet "${service}"; then
-      continue
-    fi
-
-    for ((i=1; i<=max_retries; i++)); do
-      systemctl start "${service}"
-      sleep "${retry_delay}"
-      if systemctl is-active --quiet "${service}"; then
-        break
-      fi
-      if [ "$i" -eq "$max_retries" ]; then
-        echo "Error: Failed to start ${service} after ${max_retries} attempts" >&2
-        exit 1
-      fi
-      echo "Retry ${i}/${max_retries} for ${service}"
-    done
-  done
+source_helper_script() {
+  local helper_path="/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/helper.sh"
+  echo "Loading helper script..."
+  if [[ ! -f "${helper_path}" ]]; then
+    echo "Error: helper.sh not found at ${helper_path}" >&2
+    exit 1
+  fi
+  . "${helper_path}"
 }
 
 activate_php_curl_extension() {
@@ -59,22 +43,10 @@ check_postgresql_versions() {
   fi
 }
 
-source_helper_script() {
-  local helper_path="/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/helper.sh"
-  echo "Loading helper script..."
-  if [[ ! -f "${helper_path}" ]]; then
-    echo "Error: helper.sh not found at ${helper_path}" >&2
-    exit 1
-  fi
-  . "${helper_path}"
-}
-
 init_and_seed_i2b2_database() {
-  source_helper_script
   connect_to_psql
   wait_for_psql_connection
   echo "Initializing i2b2 database..."
-
   if [[ $(eval "${PSQL} -l" | grep "i2b2" | wc -l) == 0 ]]; then
     eval "${PSQL} -v ON_ERROR_STOP=1 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/sql/i2b2_init.sql" >/dev/null
     eval "${PSQL} -v ON_ERROR_STOP=1 -d i2b2 -f /usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/sql/i2b2_db.sql" >/dev/null
@@ -147,6 +119,7 @@ main() {
   case "$OPERATION" in
     configure)
       # Runs during installation/upgrade after files have been unpacked.
+      source_helper_script
       dpkg-trigger --no-await "${DPKG_MAINTSCRIPT_PACKAGE}"/restore
       check_and_start_services
       activate_php_curl_extension

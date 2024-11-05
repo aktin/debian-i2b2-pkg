@@ -4,7 +4,7 @@
 # Version:      1.1
 # Authors:      akombeiz@ukaachen.de
 # Date:         30 Oct 24
-# Purpose:      Provides helper functions for database management tasks of maintainer scripts.
+# Purpose:      Provides helper functions for database and service management tasks of maintainer scripts.
 #--------------------------------------
 
 connect_to_psql() {
@@ -58,4 +58,50 @@ wait_for_psql_connection() {
       wait_count=$((wait_count + 1))
       sleep "${retry_interval}"
     done
+}
+
+check_and_start_services() {
+  local services=("apache2" "postgresql" "wildfly")
+  local max_retries=5
+  local retry_delay=5
+  echo "Starting required services..."
+
+  for service in "${services[@]}"; do
+    if systemctl is-active --quiet "${service}"; then
+      continue
+    fi
+
+    for ((i=1; i<=max_retries; i++)); do
+      systemctl start "${service}"
+      sleep "${retry_delay}"
+      if systemctl is-active --quiet "${service}"; then
+        break
+      fi
+      if [ "$i" -eq "$max_retries" ]; then
+        echo "Error: Failed to start ${service} after ${max_retries} attempts" >&2
+        exit 1
+      fi
+      echo "Retry ${i}/${max_retries} for ${service}"
+    done
+  done
+}
+
+stop_wildfly() {
+  echo "Stopping WildFly service..."
+  if ! systemctl is-active --quiet wildfly; then
+    echo "Service not running"
+    return 0
+  fi
+
+  systemctl stop wildfly
+  local count=0
+  local max_wait=30
+  while systemctl is-active --quiet wildfly; do
+    if ((count >= max_wait)); then
+      echo "Error: Service stop timeout after ${max_wait}s" >&2
+      return 1
+    fi
+    sleep 1
+    ((count++))
+  done
 }

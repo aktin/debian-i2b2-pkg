@@ -10,6 +10,16 @@
 
 readonly OPERATION="${1}"
 
+source_temp_helper() {
+  echo "Loading temporary helper script..."
+  local temp_helper="/tmp/${DPKG_MAINTSCRIPT_PACKAGE}_helper.sh"
+  if [[ ! -f "${temp_helper}" ]]; then
+    echo "Error: Helper script not found at ${temp_helper}" >&2
+    return 1
+  fi
+  source "${temp_helper}"
+}
+
 deactivate_php_curl_extension() {
   echo "Deactivating PHP curl extension..."
   if grep -q "^extension=curl" /etc/php/*/apache2/php.ini; then
@@ -51,16 +61,6 @@ To disable them if no longer needed:
 EOF
 }
 
-source_temp_helper() {
-  echo "Loading temporary helper script..."
-  local temp_helper="/tmp/${DPKG_MAINTSCRIPT_PACKAGE}_helper.sh"
-  if [[ ! -f "${temp_helper}" ]]; then
-    echo "Error: Helper script not found at ${temp_helper}" >&2
-    return 1
-  fi
-  source "${temp_helper}"
-}
-
 drop_i2b2_database() {
   echo "Removing i2b2 database..."
   if ! command -v psql >/dev/null 2>&1 || ! systemctl is-active --quiet postgresql; then
@@ -68,7 +68,6 @@ drop_i2b2_database() {
     return 0
   fi
 
-  source_temp_helper
   connect_to_psql
   wait_for_psql_connection
   if [[ $(eval "${PSQL} -l" | grep "i2b2" | wc -l) -gt 1 ]]; then
@@ -110,6 +109,7 @@ main() {
       ;;
     purge)
       # Runs during a purge after 'postrm remove' to delete all leftover files.
+      source_temp_helper
       drop_i2b2_database
       delete_wildfly_backup_logs
       remove_temp_helper

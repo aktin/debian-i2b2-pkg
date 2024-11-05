@@ -9,6 +9,16 @@
 
 readonly OPERATION="${1}"
 
+source_helper_script() {
+  local helper_path="/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/helper.sh"
+  echo "Loading helper script..."
+  if [[ ! -f "${helper_path}" ]]; then
+    echo "Error: helper.sh not found at ${helper_path}" >&2
+    exit 1
+  fi
+  . "${helper_path}"
+}
+
 # Creates temporary helper.sh in /tmp/ as helper.sh would be deleted before postrm and is required for database connection
 create_temp_helper() {
   echo "Creating temporary helper script..."
@@ -46,6 +56,8 @@ main() {
       ;;
     upgrade)
       # Runs during package upgrade before installation of new package.
+      source_helper_script
+      stop_wildfly
       dpkg-trigger --no-await "${DPKG_MAINTSCRIPT_PACKAGE}"/backup
       backup_wildfly_logs
       ;;
