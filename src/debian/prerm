@@ -33,7 +33,7 @@ backup_wildfly_logs() {
   if [ -d "${log_dir}" ]; then
     cp -r "${log_dir}/"*.log "${backup_dir}/"
   else
-    echo "No logs found for backup"
+    echo "No WildFly logs found for backup"
   fi
 }
 

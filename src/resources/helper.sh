@@ -12,21 +12,21 @@ connect_to_psql() {
   . /usr/share/debconf/confmodule
 
   # Extract the base name for Debconf settings (e.g., package name prefix)
-  local debconf_name
-  debconf_name="$(echo "${DPKG_MAINTSCRIPT_PACKAGE}" | awk -F '-' '{print $1"-"$2}')"
+  local shared_package_name
+  shared_package_name="$(echo "${DPKG_MAINTSCRIPT_PACKAGE}" | awk -F '-' '{print $1"-"$2}')"
 
   # Retrieve connection type from Debconf and set up the PSQL command accordingly
-  db_get "${debconf_name}/db_conn"
+  db_get "${shared_package_name}/db_conn"
   if [[ "${RET}" == "unix" ]]; then
     readonly PSQL="sudo -u postgres psql"
     echo "Connecting to PostgreSQL via local UNIX socket."
   else
     # Retrieve connection details from Debconf and construct the PSQL command for TCP/IP
     local host port user pass
-    db_get "${debconf_name}/db_host"; host="${RET}"
-    db_get "${debconf_name}/db_port"; port="${RET}"
-    db_get "${debconf_name}/db_user"; user="${RET}"
-    db_get "${debconf_name}/db_pass"; pass="${RET}"
+    db_get "${shared_package_name}/db_host"; host="${RET}"
+    db_get "${shared_package_name}/db_port"; port="${RET}"
+    db_get "${shared_package_name}/db_user"; user="${RET}"
+    db_get "${shared_package_name}/db_pass"; pass="${RET}"
 
     export PSQL="psql postgresql://${user}:${pass}@${host}:${port}?sslmode=require"
     echo "Connecting to PostgreSQL via TCP/IP at ${host}:${port}."

@@ -84,9 +84,9 @@ init_and_seed_i2b2_database() {
 }
 
 restore_wildfly_logs() {
-  echo "Restoring WildFly logs..."
   local log_dir="/opt/wildfly/standalone/log"
   local backup_dir="/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/backups/wildfly_logs"
+  echo "Restoring WildFly logs..."
 
   mkdir -p "${log_dir}"
   # Restore logs from backup directory if they exist
