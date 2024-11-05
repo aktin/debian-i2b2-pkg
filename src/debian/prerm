@@ -46,6 +46,7 @@ main() {
       ;;
     upgrade)
       # Runs during package upgrade before installation of new package.
+      dpkg-trigger --no-await "${DPKG_MAINTSCRIPT_PACKAGE}"/backup
       backup_wildfly_logs
       ;;
   esac

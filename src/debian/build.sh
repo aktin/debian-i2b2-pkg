@@ -91,7 +91,6 @@ download_and_extract_wildfly() {
   mv "${DIR_BUILD}/wildfly-${WILDFLY_VERSION}" "${DIR_BUILD}${dir_wildfly_home}"
 }
 
-# TODO cleanup standalone_xml_history
 configure_wildfly() {
   local dir_wildfly_home="${1}"
   echo "Configuring WildFly server..."
@@ -109,6 +108,9 @@ configure_wildfly() {
 
   # Apply configuration via JBoss CLI
   "${DIR_BUILD}${dir_wildfly_home}/bin/jboss-cli.sh" --file="${processed_config_cli}"
+
+  # Cleanup configuration patch history to reduce space
+  rm -rf ./standalone/configuration/standalone_xml_history/current/*
 }
 
 setup_wildfly_systemd() {

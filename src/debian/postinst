@@ -147,6 +147,7 @@ main() {
   case "$OPERATION" in
     configure)
       # Runs during installation/upgrade after files have been unpacked.
+      dpkg-trigger --no-await "${DPKG_MAINTSCRIPT_PACKAGE}"/restore
       check_and_start_services
       activate_php_curl_extension
       systemctl enable apache2
