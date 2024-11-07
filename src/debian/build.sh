@@ -180,8 +180,6 @@ prepare_management_scripts_and_files() {
 
   # Replace placeholders
   sed -e "s|__PACKAGE_NAME__|${PACKAGE_NAME}|g" -e "s|__PACKAGE_VERSION__|${PACKAGE_VERSION}|g" "${DIR_CURRENT}/control" > "${DIR_BUILD}/DEBIAN/control"
-  sed -e "s|__SHARED_PACKAGE_NAME__|${shared_package_name}|g" "${DIR_CURRENT}/templates" > "${DIR_BUILD}/DEBIAN/templates"
-  sed -e "s|__SHARED_PACKAGE_NAME__|${shared_package_name}|g" "${DIR_CURRENT}/config" > "${DIR_BUILD}/DEBIAN/config"
 
   # Process the postrm script by inserting SQL drop statements
   sed -e "/^__I2B2_DROP_STATEMENT__/{r ${DIR_RESOURCES}/sql/i2b2_drop.sql" -e "d;}" "${DIR_CURRENT}/postrm" > "${DIR_BUILD}/DEBIAN/postrm"
