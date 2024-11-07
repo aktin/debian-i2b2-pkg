@@ -1,63 +1,39 @@
 #!/bin/bash
 #--------------------------------------
 # Script Name:  helper.sh
-# Version:      1.1
+# Version:      1.2
 # Authors:      akombeiz@ukaachen.de
-# Date:         30 Oct 24
-# Purpose:      Provides helper functions for database and service management tasks of maintainer scripts.
+# Date:         07 Nov 24
+# Purpose:      Provides helper functions for database connection and service management tasks of maintainer scripts.
 #--------------------------------------
 
+log_info() { echo -e "\033[0;34m[INFO]\033[0m $1"; }
+log_success() { echo -e "\033[0;32m[SUCCESS]\033[0m $1"; }
+log_warn() { echo -e "\033[1;33m[WARN]\033[0m $1"; }
+log_error() { echo -e "\033[0;31m[ERROR]\033[0m $1" >&2; }
+
 connect_to_psql() {
-  # Source the Debconf configuration module
-  . /usr/share/debconf/confmodule
+  local max_retries=5
+  local retry_interval=12
+  local timeout=$((max_retries * retry_interval))
+  local attempt=1
 
-  # Extract the base name for Debconf settings (e.g., package name prefix)
-  local shared_package_name
-  shared_package_name="$(echo "${DPKG_MAINTSCRIPT_PACKAGE}" | awk -F '-' '{print $1"-"$2}')"
+  log_info "Connecting to PostgreSQL via local UNIX socket..."
+  export PSQL="sudo -u postgres psql"
 
-  # Retrieve connection type from Debconf and set up the PSQL command accordingly
-  db_get "${shared_package_name}/db_conn"
-  if [[ "${RET}" == "unix" ]]; then
-    readonly PSQL="sudo -u postgres psql"
-    echo "Connecting to PostgreSQL via local UNIX socket."
-  else
-    # Retrieve connection details from Debconf and construct the PSQL command for TCP/IP
-    local host port user pass
-    db_get "${shared_package_name}/db_host"; host="${RET}"
-    db_get "${shared_package_name}/db_port"; port="${RET}"
-    db_get "${shared_package_name}/db_user"; user="${RET}"
-    db_get "${shared_package_name}/db_pass"; pass="${RET}"
-
-    export PSQL="psql postgresql://${user}:${pass}@${host}:${port}?sslmode=require"
-    echo "Connecting to PostgreSQL via TCP/IP at ${host}:${port}."
-  fi
-}
-
-wait_for_psql_connection() {
-  local wait_count=0
-  local max_retries=12
-  local retry_interval=5
-  local timeout=60
-
-  echo "Waiting for PostgreSQL to be ready..."
-    while true; do
-      if systemctl is-active --quiet postgresql; then
-        # Verify actual connection
-        if eval "${PSQL} -c '\l' >/dev/null 2>&1"; then
-          echo "Successfully connected to PostgreSQL."
-          return 0
-        fi
-      fi
-
-      if ((wait_count >= max_retries)); then
-        echo "Error: Database connection timeout after ${timeout} seconds." >&2
-        return 1
-      fi
-
-      echo "Database not ready. Retrying in ${retry_interval} seconds... (Attempt ${wait_count}/${max_retries})"
-      wait_count=$((wait_count + 1))
-      sleep "${retry_interval}"
-    done
+  while ((attempt <= max_retries)); do
+    if systemctl is-active --quiet postgresql && eval "${PSQL} -c '\l' >/dev/null 2>&1"; then
+      log_success "Successfully connected to PostgreSQL"
+      return 0
+    fi
+    if ((attempt == max_retries)); then
+      log_error "Database connection timeout after ${timeout} seconds"
+      return 1
+    fi
+    log_warn "Database not ready. Retrying in ${retry_interval}s... (Attempt ${attempt}/${max_retries})"
+    ((attempt++))
+    sleep "${retry_interval}"
+  done
 }
 
 # Start a service with retry mechanism
@@ -65,10 +41,10 @@ check_and_start_service() {
   local service="${1}"
   local max_retries=5
   local retry_delay=5
-  echo "Starting ${service} service..."
+  log_info "Starting ${service} service..."
 
   if systemctl is-active --quiet "${service}"; then
-    echo "Service already running"
+    log_success "Service ${service} already running"
     return 0
   fi
 
@@ -76,35 +52,37 @@ check_and_start_service() {
     systemctl start "${service}"
     sleep "${retry_delay}"
     if systemctl is-active --quiet "${service}"; then
-      break
+      log_success "Service ${service} started successfully"
+      return 0
     fi
     if [ "$i" -eq "$max_retries" ]; then
-      echo "Error: Failed to start ${service} after ${max_retries} attempts" >&2
+      log_error "Failed to start ${service} after ${max_retries} attempts"
       return 1
     fi
-    echo "Retry ${i}/${max_retries} for ${service}"
+    log_warn "Retry ${i}/${max_retries} for ${service}"
   done
 }
 
 # Stop a service with timeout
 stop_service() {
   local service="${1}"
-  echo "Stopping ${service} service..."
+  local max_wait=30
+  log_info "Stopping ${service} service..."
 
   if ! systemctl is-active --quiet "${service}"; then
-    echo "Service not running"
+    log_warn "Service ${service} not running"
     return 0
   fi
 
   systemctl stop "${service}"
   local count=0
-  local max_wait=30
   while systemctl is-active --quiet "${service}"; do
     if ((count >= max_wait)); then
-      echo "Error: Service stop timeout after ${max_wait}s" >&2
+      log_error "Service ${service} stop timeout after ${max_wait}s"
       return 1
     fi
     sleep 1
     ((count++))
   done
+  log_success "Service ${service} stopped successfully"
 }
