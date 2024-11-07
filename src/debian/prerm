@@ -1,49 +1,57 @@
 #!/bin/bash
 #--------------------------------------
 # Script Name:  prerm
-# Version:      1.1
+# Version:      1.2
 # Authors:      skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
-# Date:         30 Oct 24
-# Purpose:      Creates a temporary helper for post-removal database tasks, and backs up WildFly logs.
+# Date:         07 Nov 24
+# Purpose:      Manages pre-removal tasks like helper script backup and log preservation
 #--------------------------------------
+
+log_info() { echo -e "\033[0;34m[INFO]\033[0m $1"; }
+log_success() { echo -e "\033[0;32m[SUCCESS]\033[0m $1"; }
+log_warn() { echo -e "\033[1;33m[WARN]\033[0m $1"; }
+log_error() { echo -e "\033[0;31m[ERROR]\033[0m $1" >&2; }
 
 readonly OPERATION="${1}"
 
 source_helper_script() {
   local helper_path="/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/helper.sh"
-  echo "Loading helper script..."
+  log_info "Loading helper script..."
   if [[ ! -f "${helper_path}" ]]; then
-    echo "Error: helper.sh not found at ${helper_path}" >&2
+    log_error "helper.sh not found at ${helper_path}"
     exit 1
   fi
   . "${helper_path}"
+  log_success "Helper script loaded"
 }
 
 # Creates temporary helper.sh in /tmp/ as helper.sh would be deleted before postrm and is required for database connection
 create_temp_helper() {
-  echo "Creating temporary helper script..."
+  log_info "Creating temporary helper script..."
   local helper_src="/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/helper.sh"
   local helper_dest="/tmp/${DPKG_MAINTSCRIPT_PACKAGE}_helper.sh"
 
   if [[ ! -f "${helper_src}" ]]; then
-    echo "Error: helper.sh not found at ${helper_src}" >&2
+    log_error "helper.sh not found at ${helper_src}"
     return 1
   fi
 
   cp "${helper_src}" "${helper_dest}"
+  log_success "Temporary helper created at ${helper_dest}"
 }
 
 backup_wildfly_logs() {
   local log_dir="/opt/wildfly/standalone/log"
   local backup_dir="/var/backups/${DPKG_MAINTSCRIPT_PACKAGE}/wildfly_logs"
-  echo "Backing up WildFly logs..."
+  log_info "Backing up WildFly logs..."
 
   mkdir -p "${backup_dir}"
   # Copy all logs to backup directory
   if [ -d "${log_dir}" ]; then
     cp -r "${log_dir}/"*.log "${backup_dir}/"
+    log_success "Logs backed up to ${backup_dir}"
   else
-    echo "No WildFly logs found for backup"
+    log_warn "No WildFly logs found for backup"
   fi
 }
 
@@ -51,11 +59,11 @@ main() {
   set -euo pipefail
   case "$OPERATION" in
     remove)
-      # Runs during package removal before files are deleted.
+      # Runs during package removal before files are deleted
       create_temp_helper
       ;;
     upgrade)
-      # Runs during package upgrade before installation of new package.
+      # Runs during package upgrade before installation of new package
       source_helper_script
       stop_service "wildfly"
       dpkg-trigger --no-await "${DPKG_MAINTSCRIPT_PACKAGE}"/backup
