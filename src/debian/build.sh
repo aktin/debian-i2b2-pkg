@@ -185,6 +185,7 @@ prepare_management_scripts_and_files() {
   sed -e "/^__I2B2_DROP_STATEMENT__/{r ${DIR_RESOURCES}/sql/i2b2_drop.sql" -e "d;}" "${DIR_CURRENT}/postrm" > "${DIR_BUILD}/DEBIAN/postrm"
 
   # Copy necessary scripts
+  cp "${DIR_CURRENT}/preinst" "${DIR_BUILD}/DEBIAN/"
   cp "${DIR_CURRENT}/postinst" "${DIR_BUILD}/DEBIAN/"
   cp "${DIR_CURRENT}/prerm" "${DIR_BUILD}/DEBIAN/"
 
@@ -195,7 +196,7 @@ prepare_management_scripts_and_files() {
 build_package() {
   echo "Building Debian package..."
   dpkg-deb --build "${DIR_BUILD}"
-  rm -rf "${DIR_BUILD}"
+ # rm -rf "${DIR_BUILD}"
 }
 
 main() {

@@ -66,7 +66,6 @@ main() {
       # Runs during package upgrade before installation of new package
       source_helper_script
       stop_service "wildfly"
-      dpkg-trigger --no-await "${DPKG_MAINTSCRIPT_PACKAGE}"/backup
       backup_wildfly_logs
       ;;
   esac

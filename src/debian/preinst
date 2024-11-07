@@ -1,0 +1,50 @@
+#!/bin/bash
+#--------------------------------------
+# Script Name:  preinst
+# Version:      1.2
+# Authors:      skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
+# Date:         07 Nov 24
+# Purpose:      Prepares the system for new package installation by cleaning up WildFly deployment markers and setting up backup triggers.
+#--------------------------------------
+
+log_info() { echo -e "\033[0;34m[INFO]\033[0m $1"; }
+log_success() { echo -e "\033[0;32m[SUCCESS]\033[0m $1"; }
+log_warn() { echo -e "\033[1;33m[WARN]\033[0m $1"; }
+log_error() { echo -e "\033[0;31m[ERROR]\033[0m $1" >&2; }
+
+readonly OPERATION="${1}"
+
+cleanup_wildfly_deployment_markers() {
+  local deploy_dir="/opt/wildfly/standalone/deployments"
+  log_info "Cleaning up WildFly deployment markers..."
+
+  if [[ ! -d "${deploy_dir}" ]]; then
+    log_warn "Deployment directory not found"
+    return 0
+  fi
+
+  # Remove all deployment markers while preserving the actual artifacts
+  find "${deploy_dir}" -type f \( \
+    -name "*.deployed" -o \
+    -name "*.dodeploy" -o \
+    -name "*.failed" -o \
+    -name "*.undeployed" \
+  \) -delete
+  log_success "Deployment markers cleaned up"
+}
+
+main() {
+  set -euo pipefail
+  case "$OPERATION" in
+    install)
+      # Runs during installation before files have been unpacked.
+      ;;
+    upgrade)
+      # Runs during package upgrade before files have been unpacked.
+      cleanup_wildfly_deployment_markers
+      dpkg-trigger --no-await "${DPKG_MAINTSCRIPT_PACKAGE}"/backup
+      ;;
+  esac
+}
+
+main "$@"
