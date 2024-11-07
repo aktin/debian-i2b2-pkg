@@ -196,7 +196,7 @@ prepare_management_scripts_and_files() {
 build_package() {
   echo "Building Debian package..."
   dpkg-deb --build "${DIR_BUILD}"
- # rm -rf "${DIR_BUILD}"
+  rm -rf "${DIR_BUILD}"
 }
 
 main() {
