@@ -43,16 +43,35 @@ create_temp_helper() {
 backup_wildfly_logs() {
   local log_dir="/opt/wildfly/standalone/log"
   local backup_dir="/var/backups/${DPKG_MAINTSCRIPT_PACKAGE}/wildfly_logs"
+  local date_suffix=$(date '+%Y%m%d_%H%M%S')
   log_info "Backing up WildFly logs..."
+
+  if [[ ! -d "${log_dir}" ]]; then
+    log_warn "No WildFly logs found for backup"
+    return 0
+  fi
 
   mkdir -p "${backup_dir}"
   # Copy all logs to backup directory
-  if [ -d "${log_dir}" ]; then
-    cp -r "${log_dir}/"*.log "${backup_dir}/"
-    log_success "Logs backed up to ${backup_dir}"
-  else
-    log_warn "No WildFly logs found for backup"
-  fi
+  find "${log_dir}" -type f \( -name "*.log" -o -name "*.log.[0-9]*" \) | while read -r log_file; do
+    local filename=$(basename "${log_file}")
+    local backup_name
+
+    if [[ "${filename}" =~ ^(.+)\.log\.([0-9]+)$ ]]; then
+      # Handle rotated logs (e.g., server.log.1 -> server.1_20241107_143022.log)
+      backup_name="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}_${date_suffix}.log"
+    else
+      # Handle regular logs (e.g., server.log -> server_20241107_143022.log)
+      backup_name="${filename%.*}_${date_suffix}.log"
+    fi
+
+    local backup_file="${backup_dir}/${backup_name}"
+    if cp "${log_file}" "${backup_file}"; then
+      log_success "Backed up: ${filename} -> ${backup_name}"
+    else
+      log_error "Failed to backup: ${filename}"
+    fi
+  done
 }
 
 main() {
