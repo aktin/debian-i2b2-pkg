@@ -85,14 +85,14 @@ EOF
   fi
 }
 
-delete_wildfly_backup_logs() {
-  log_info "Removing backup logs..."
-  local backup_dir="/var/backups/${DPKG_MAINTSCRIPT_PACKAGE}/wildfly_logs"
+delete_backup_folder() {
+  log_info "Removing backups..."
+  local backup_dir="/var/backups/${DPKG_MAINTSCRIPT_PACKAGE}"
   if [[ -d "${backup_dir}" ]]; then
     rm -rf "${backup_dir}"
-    log_success "Backup logs removed"
+    log_success "Backups removed"
   else
-    log_info "No backup logs found"
+    log_info "No backups found"
   fi
 }
 
@@ -121,7 +121,7 @@ main() {
       # Runs during a purge after 'postrm remove' to delete all leftover files
       source_temp_helper
       drop_i2b2_database
-      delete_wildfly_backup_logs
+      delete_backup_folder
       remove_temp_helper
       ;;
   esac
