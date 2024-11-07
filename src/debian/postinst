@@ -120,16 +120,18 @@ main() {
     configure)
       # Runs during installation/upgrade after files have been unpacked.
       source_helper_script
-      dpkg-trigger --no-await "${DPKG_MAINTSCRIPT_PACKAGE}"/restore
-      check_and_start_services
+      check_and_start_service "apache2"
       activate_php_curl_extension
       systemctl enable apache2
+      check_and_start_service "postgresql"
       check_postgresql_versions
       init_and_seed_i2b2_database
       systemctl enable postgresql
       restore_wildfly_logs
+      dpkg-trigger --no-await "${DPKG_MAINTSCRIPT_PACKAGE}"/restore
       set_wildfly_service_dependency
       create_wildfly_user
+      check_and_start_service "wildfly"
       systemctl enable wildfly
       systemctl daemon-reload
       ;;

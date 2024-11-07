@@ -60,43 +60,46 @@ wait_for_psql_connection() {
     done
 }
 
-check_and_start_services() {
-  local services=("apache2" "postgresql" "wildfly")
+# Start a service with retry mechanism
+check_and_start_service() {
+  local service="${1}"
   local max_retries=5
   local retry_delay=5
-  echo "Starting required services..."
+  echo "Starting ${service} service..."
 
-  for service in "${services[@]}"; do
+  if systemctl is-active --quiet "${service}"; then
+    echo "Service already running"
+    return 0
+  fi
+
+  for ((i=1; i<=max_retries; i++)); do
+    systemctl start "${service}"
+    sleep "${retry_delay}"
     if systemctl is-active --quiet "${service}"; then
-      continue
+      break
     fi
-
-    for ((i=1; i<=max_retries; i++)); do
-      systemctl start "${service}"
-      sleep "${retry_delay}"
-      if systemctl is-active --quiet "${service}"; then
-        break
-      fi
-      if [ "$i" -eq "$max_retries" ]; then
-        echo "Error: Failed to start ${service} after ${max_retries} attempts" >&2
-        exit 1
-      fi
-      echo "Retry ${i}/${max_retries} for ${service}"
-    done
+    if [ "$i" -eq "$max_retries" ]; then
+      echo "Error: Failed to start ${service} after ${max_retries} attempts" >&2
+      return 1
+    fi
+    echo "Retry ${i}/${max_retries} for ${service}"
   done
 }
 
-stop_wildfly() {
-  echo "Stopping WildFly service..."
-  if ! systemctl is-active --quiet wildfly; then
+# Stop a service with timeout
+stop_service() {
+  local service="${1}"
+  echo "Stopping ${service} service..."
+
+  if ! systemctl is-active --quiet "${service}"; then
     echo "Service not running"
     return 0
   fi
 
-  systemctl stop wildfly
+  systemctl stop "${service}"
   local count=0
   local max_wait=30
-  while systemctl is-active --quiet wildfly; do
+  while systemctl is-active --quiet "${service}"; do
     if ((count >= max_wait)); then
       echo "Error: Service stop timeout after ${max_wait}s" >&2
       return 1
