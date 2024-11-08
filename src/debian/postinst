@@ -144,11 +144,11 @@ main() {
       check_and_start_service "postgresql"
       check_postgresql_versions
       init_and_seed_i2b2_database
-      restore_wildfly_logs
       set_wildfly_service_dependency
       create_wildfly_user
-      set_wildfly_permissions
+      restore_wildfly_logs
       dpkg-trigger --no-await "${DPKG_MAINTSCRIPT_PACKAGE}"/restore
+      set_wildfly_permissions
       systemctl daemon-reload
       systemctl enable wildfly
       check_and_start_service "wildfly"
