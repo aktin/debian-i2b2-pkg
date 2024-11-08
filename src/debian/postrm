@@ -110,9 +110,7 @@ main() {
   case "$OPERATION" in
     remove)
       # Runs during package removal after files have been deleted
-      source_temp_helper
       deactivate_php_curl_extension
-      stop_service "wildfly"
       delete_wildfly_user
       delete_wildfly_remnants
       notify_user_about_services

@@ -31,11 +31,14 @@ create_temp_helper() {
   local helper_src="/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/helper.sh"
   local helper_dest="/tmp/${DPKG_MAINTSCRIPT_PACKAGE}_helper.sh"
 
+  if [[ -f "${helper_dest}" ]]; then
+    log_info "helper.sh already existing at ${helper_dest}"
+    return 0
+  fi
   if [[ ! -f "${helper_src}" ]]; then
     log_error "helper.sh not found at ${helper_src}"
     return 1
   fi
-
   cp "${helper_src}" "${helper_dest}"
   log_success "Temporary helper created at ${helper_dest}"
 }
@@ -61,6 +64,8 @@ cleanup_wildfly_deployment_markers() {
 
 main() {
   set -euo pipefail
+  source_helper_script
+  stop_service "wildfly"
   case "$OPERATION" in
     remove)
       # Runs during package removal before files are deleted
@@ -68,8 +73,6 @@ main() {
       ;;
     upgrade)
       # Runs during package upgrade before installation of new package
-      source_helper_script
-      stop_service "wildfly"
       cleanup_wildfly_deployment_markers
       ;;
   esac
