@@ -4,7 +4,7 @@
 # Version:      1.2
 # Authors:      skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
 # Date:         07 Nov 24
-# Purpose:      Manages pre-removal tasks like helper script backup and log preservation
+# Purpose:      Prepares the system before package files are removed by stopping services, backing up user data, and cleaning runtime artifacts.
 #--------------------------------------
 
 log_info() { echo -e "\033[0;34m[INFO]\033[0m $1"; }

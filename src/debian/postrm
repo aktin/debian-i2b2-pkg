@@ -4,8 +4,7 @@
 # Version:      1.2
 # Authors:      skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
 # Date:         07 Nov 24
-# Purpose:      Cleans up configurations, user accounts, and remnants of 'aktin-notaufnahme-i2b2' post-removal, notifies users about remaining
-#               services, and performs database removal on purge.
+# Purpose:      Cleans up after package files are removed by purging configurations, user data, database entries, and notifying users about remaining manual steps.
 #--------------------------------------
 
 log_info() { echo -e "\033[0;34m[INFO]\033[0m $1"; }

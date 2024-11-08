@@ -4,9 +4,7 @@
 # Version:      1.2
 # Authors:      skurka@ukaachen.de, shuening@ukaachen.de, akombeiz@ukaachen.de
 # Date:         07 Nov 24
-# Purpose:      Ensures proper setup of 'aktin-notaufnahme-i2b2' after installation, configuring and starting services, initializing the i2b2
-#               database, enabling PHP extensions, checking PostgreSQL versions, restoring logs, and setting dependencies to make all components
-#               fully operational.
+# Purpose:      Configures the package after files are unpacked by initializing services, databases, and required configurations to make the package operational.
 #--------------------------------------
 
 log_info() { echo -e "\033[0;34m[INFO]\033[0m $1"; }
