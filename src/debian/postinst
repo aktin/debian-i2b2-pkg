@@ -125,7 +125,6 @@ create_wildfly_user() {
 set_wildfly_permissions() {
   log_info "Setting up Wildfly user permissions..."
   chown -R wildfly:wildfly /opt/wildfly
-  chown wildfly:wildfly /opt/wildfly/standalone/deployments/*
   log_success "WildFly user permissions set"
 }
 
