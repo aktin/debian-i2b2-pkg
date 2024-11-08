@@ -75,7 +75,7 @@ restore_wildfly_logs() {
     rm -rf "${backup_dir}"
     log_success "Logs restored successfully"
   else
-    log_info "No logs to restore"
+    log_warn "No logs to restore"
   fi
 }
 

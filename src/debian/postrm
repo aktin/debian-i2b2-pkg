@@ -58,7 +58,7 @@ delete_wildfly_remnants() {
 }
 
 notify_user_about_services() {
-  echo -e "\033[1;33mThe following services remain installed:
+  echo -e "\033[1;33m[NOTICE] The following services remain installed:
   - Apache (apache2)
   - PostgreSQL (postgresql)
 
