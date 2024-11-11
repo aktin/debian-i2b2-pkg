@@ -109,8 +109,8 @@ configure_wildfly() {
   echo 'JAVA_OPTS="$JAVA_OPTS -Dlog4j2.formatMsgNoLookups=true"' >> "${DIR_BUILD}${dir_wildfly_home}/bin/standalone.conf"
 
   # Set up WildFly CLI for configuration
-  local processed_config_cli="${DIR_BUILD}${dir_wildfly_home}/bin/i2b2_config.cli"
-  sed "s/__POSTGRES_JDBC_VERSION__/${POSTGRES_JDBC_VERSION}/g" "${DIR_RESOURCES}/wildfly/i2b2_config.cli" > "${processed_config_cli}"
+  local processed_config_cli="${DIR_BUILD}${dir_wildfly_home}/bin/add-i2b2-config.cli"
+  sed "s/__POSTGRES_JDBC_VERSION__/${POSTGRES_JDBC_VERSION}/g" "${DIR_RESOURCES}/wildfly/add-i2b2-config.cli" > "${processed_config_cli}"
 
   # Apply configuration via JBoss CLI
   "${DIR_BUILD}${dir_wildfly_home}/bin/jboss-cli.sh" --file="${processed_config_cli}"
