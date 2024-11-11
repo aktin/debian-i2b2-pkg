@@ -207,17 +207,16 @@ copy_helper_scripts() {
 }
 
 prepare_management_scripts_and_files() {
-  local shared_package_name="$(echo "${PACKAGE_NAME}" | awk -F '-' '{print $1"-"$2}')"
   echo "Preparing Debian package management files..."
   mkdir -p "${DIR_BUILD}/DEBIAN"
 
   # Replace placeholders
   sed -e "s|__PACKAGE_NAME__|${PACKAGE_NAME}|g" -e "s|__PACKAGE_VERSION__|${PACKAGE_VERSION}|g" "${DIR_CURRENT}/control" > "${DIR_BUILD}/DEBIAN/control"
-  sed -e "s|__TRIGGER_PREFIX__|${TRIGGER_PREFIX}|g" "${DIR_CURRENT}/prerm" > "${DIR_BUILD}/DEBIAN/prerm"
   sed -e "s|__TRIGGER_PREFIX__|${TRIGGER_PREFIX}|g" "${DIR_CURRENT}/postinst" > "${DIR_BUILD}/DEBIAN/postinst"
-
-  # Process the postrm script by inserting SQL drop statements
   sed -e "/^__I2B2_DROP_STATEMENT__/{r ${DIR_RESOURCES}/sql/i2b2_drop.sql" -e "d;}" "${DIR_CURRENT}/postrm" > "${DIR_BUILD}/DEBIAN/postrm"
+
+  # Copy necessary scripts
+  cp "${DIR_CURRENT}/prerm" "${DIR_BUILD}/DEBIAN/prerm"
 
   # Set proper executable permissions
   chmod 0755 "${DIR_BUILD}/DEBIAN/"*
