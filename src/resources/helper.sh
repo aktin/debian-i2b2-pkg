@@ -1,9 +1,9 @@
 #!/bin/bash
 #--------------------------------------
 # Script Name:  helper.sh
-# Version:      1.2
+# Version:      1.3
 # Authors:      akombeiz@ukaachen.de
-# Date:         07 Nov 24
+# Date:         1 Nov 24
 # Purpose:      Provides helper functions for database connection and service management tasks of maintainer scripts.
 #--------------------------------------
 
@@ -36,11 +36,11 @@ connect_to_psql() {
   done
 }
 
-# Start a service with retry mechanism
 check_and_start_service() {
   local service="${1}"
   local max_retries=5
   local retry_delay=5
+  local timeout=$((max_retries * retry_delay))
   log_info "Starting ${service} service..."
 
   if systemctl is-active --quiet "${service}"; then
@@ -56,14 +56,14 @@ check_and_start_service() {
       return 0
     fi
     if [ "$i" -eq "$max_retries" ]; then
-      log_error "Failed to start ${service} after ${max_retries} attempts"
+      log_error "Failed to start ${service} after ${timeout} seconds"
+      journalctl -u "${service}" --no-pager -n 20 >&2
       return 1
     fi
-    log_warn "Retry ${i}/${max_retries} for ${service}"
+    log_warn "Retry ${i}/${max_retries} for ${service} (waiting ${retry_delay}s)"
   done
-}
+ }
 
-# Stop a service with timeout
 stop_service() {
   local service="${1}"
   local max_wait=30
@@ -79,7 +79,11 @@ stop_service() {
   while systemctl is-active --quiet "${service}"; do
     if ((count >= max_wait)); then
       log_error "Service ${service} stop timeout after ${max_wait}s"
+      journalctl -u "${service}" --no-pager -n 20 >&2
       return 1
+    fi
+    if ((count % 5 == 0)); then
+      log_info "Waiting for ${service} to stop... (${count}/${max_wait}s)"
     fi
     sleep 1
     ((count++))
