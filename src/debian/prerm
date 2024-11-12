@@ -108,14 +108,15 @@ cleanup_wildfly_deployment_markers() {
 main() {
   set -euo pipefail
   source_helper_script
-  stop_service "wildfly"
   case "$OPERATION" in
     remove)
       # Runs during package removal before files are deleted
+      stop_service "wildfly"
       create_temp_helper
       ;;
     upgrade)
       # Runs during package upgrade before old files are deleted
+      stop_service "wildfly"
       backup_wildfly_logs
       cleanup_wildfly_deployment_markers
       ;;
