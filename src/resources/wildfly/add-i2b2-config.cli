@@ -24,11 +24,6 @@ embed-server
 # Increase deployment timeout to 600 seconds to allow for large deployments
 /subsystem=deployment-scanner/scanner=default:write-attribute(name="deployment-timeout", value="600")
 
-# Configure Undertow (web server) subsystem
-# Increase maximum POST size to 1GB for both HTTP and HTTPS listeners to handle large requests
-/subsystem=undertow/server=default-server/http-listener=default:write-attribute(name="max-post-size", value="1073741824")
-/subsystem=undertow/server=default-server/https-listener=https:write-attribute(name="max-post-size", value="1073741824")
-
 # Configure socket bindings
 # Set the HTTP port to the value of 'jboss.http.port' system property, or default to 9090 if not set
 /socket-binding-group=standard-sockets/socket-binding=http:write-attribute(name=port, value="${jboss.http.port:9090}")
