@@ -144,7 +144,7 @@ main() {
       set_wildfly_service_dependency
       create_wildfly_user
       restore_wildfly_logs
-      dpkg-trigger --await __TRIGGER_PREFIX__-restore
+      dpkg-trigger --no-await __TRIGGER_PREFIX__-reapply-datasource
       set_wildfly_permissions
       systemctl daemon-reload
       systemctl enable wildfly
