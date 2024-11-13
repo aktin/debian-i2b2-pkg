@@ -121,7 +121,7 @@ download_and_extract_wildfly() {
   if [[ -f "${DIR_DOWNLOADS}/wildfly-${WILDFLY_VERSION}.zip" ]]; then
     echo "Using cached WildFly download"
   else
-    wget "https://github.com/wildfly/wildfly/releases/download/${WILDFLY_VERSION}/wildfly-${WILDFLY_VERSION}.zip" -P "${DIR_DOWNLOADS}"
+    wget "https://download.jboss.org/wildfly/${WILDFLY_VERSION}/wildfly-${WILDFLY_VERSION}.zip" -P "${DIR_DOWNLOADS}"
   fi
 
   mkdir -p "$(dirname "${DIR_BUILD}${dir_wildfly_home}")"
