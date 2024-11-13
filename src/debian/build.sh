@@ -178,18 +178,17 @@ download_and_copy_jdbc_driver() {
   cp "${DIR_DOWNLOADS}/postgresql-${POSTGRES_JDBC_VERSION}.jar" "${DIR_BUILD}${dir_wildfly_deployments}"
 }
 
-# TODO FIX THIS
 download_and_copy_i2b2_war() {
   local dir_wildfly_deployments="${1}"
-  echo "Processing i2b2 core WAR file..."
+  echo "Downloading i2b2 WAR ${I2B2_VERSION}..."
 
-  if [[ ! -f "${DIR_DOWNLOADS}/i2b2core-upgrade-${I2B2_VERSION}.zip" ]]; then
-    echo "Error: i2b2core-upgrade-${I2B2_VERSION}.zip not found in ${DIR_DOWNLOADS}" >&2
-    echo "Please download manually and place in downloads directory" >&2
-    exit 1
+ if [[ -f "${DIR_DOWNLOADS}/i2b2.war" ]]; then
+    echo "Using cached i2b2 WAR"
+  else
+    wget "https://www.aktin.org/software/repo/org/i2b2/${I2B2_VERSION}/i2b2.war" -P "${DIR_DOWNLOADS}"
   fi
 
-  unzip -q -j "${DIR_DOWNLOADS}/i2b2core-upgrade-${I2B2_VERSION}.zip" "i2b2/deployments/i2b2.war" -d "${DIR_BUILD}${dir_wildfly_deployments}"
+  cp "${DIR_DOWNLOADS}/i2b2.war" "${DIR_BUILD}${dir_wildfly_deployments}"
 }
 
 copy_sql_scripts() {
@@ -245,7 +244,7 @@ main() {
   copy_sql_scripts "/usr/share/${PACKAGE_NAME}/sql"
   copy_helper_scripts "/usr/share/${PACKAGE_NAME}"
   prepare_management_scripts_and_files
-  build_package
+ # build_package
 }
 
 main
