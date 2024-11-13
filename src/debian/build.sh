@@ -244,7 +244,7 @@ main() {
   copy_sql_scripts "/usr/share/${PACKAGE_NAME}/sql"
   copy_helper_scripts "/usr/share/${PACKAGE_NAME}"
   prepare_management_scripts_and_files
- # build_package
+  build_package
 }
 
 main
