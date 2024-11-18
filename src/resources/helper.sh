@@ -90,3 +90,22 @@ stop_service() {
   done
   log_success "Service ${service} stopped successfully"
 }
+
+cleanup_wildfly_deployment_markers() {
+  local deploy_dir="${1:-/opt/wildfly/standalone/deployments}"
+  log_info "Cleaning up WildFly deployment markers..."
+
+  if [[ ! -d "${deploy_dir}" ]]; then
+    log_warn "Deployment directory not found"
+    return 0
+  fi
+
+  # Remove all deployment markers while preserving the actual artifacts
+  find "${deploy_dir}" -type f \( \
+    -name "*.deployed" -o \
+    -name "*.dodeploy" -o \
+    -name "*.failed" -o \
+    -name "*.undeployed" \
+  \) -delete
+  log_success "Deployment markers cleaned up"
+}
