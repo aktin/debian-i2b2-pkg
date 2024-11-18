@@ -109,3 +109,24 @@ cleanup_wildfly_deployment_markers() {
   \) -delete
   log_success "Deployment markers cleaned up"
 }
+
+# Removes specified datasource files from deployment directory
+# (as datasources moved to standalone.xml in V1.6)
+# @param $1 Deployment directory path (optional, defaults to WildFly deployments)
+# @param $2... One or more datasource names without .xml extension
+remove_datasource_files() {
+  local deploy_dir="${1:-/opt/wildfly/standalone/deployments}"
+  shift
+  local -r datasources=("$@")
+  log_info "Removing datasource files..."
+
+  for ds in "${datasources[@]}"; do
+    echo "${deploy_dir}/${ds}.xml"
+    if ! rm -f "${deploy_dir}/${ds}.xml" 2>/dev/null; then
+      log_error "Failed to remove ${ds} datasource files"
+      return 1
+    fi
+  done
+  log_success "Datasource files removed successfully"
+  return 0
+}

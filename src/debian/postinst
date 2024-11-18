@@ -128,22 +128,6 @@ set_wildfly_permissions() {
   log_success "WildFly user permissions set"
 }
 
-# datasources are moved from deployments/ to standalone.xml in 1.6
-clean_up_datasources() {
-  local deploy_dir="${1:-/opt/wildfly/standalone/deployments}"
-  local -r datasources=("crc-ds" "im-ds" "ont-ds" "pm-ds" "work-ds")
-  log_info "Removing i2b2 datasource files..."
-
-  for ds in "${datasources[@]}"; do
-    if ! rm -f "${deploy_dir}/${ds}.xml" 2>/dev/null; then
-      log_error "Failed to remove ${ds} datasource files"
-      return 1
-    fi
-  done
-  log_success "Datasource files removed successfully"
-  return 0
-}
-
 update_aktin_ds_jdbc_version() {
   local deploy_dir="${1:-/opt/wildfly/standalone/deployments}"
   local new_driver="${2:-}"
@@ -173,7 +157,7 @@ main() {
         # Runs only on update of package 1.5.3
         stop_service "wildfly"
         cleanup_wildfly_deployment_markers
-        clean_up_datasources
+        remove_datasource_files "" "crc-ds" "im-ds" "ont-ds" "pm-ds" "work-ds"
         update_aktin_ds_jdbc_version "" "__POSTGRES_JDBC_VERSION__"
       fi
       systemctl enable apache2
