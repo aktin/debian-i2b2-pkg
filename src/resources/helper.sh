@@ -106,6 +106,7 @@ cleanup_wildfly_deployment_markers() {
     -name "*.dodeploy" -o \
     -name "*.failed" -o \
     -name "*.undeployed" \
+    -name "*.swp" \
   \) -delete
   log_success "Deployment markers cleaned up"
 }
