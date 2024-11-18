@@ -164,10 +164,10 @@ update_aktin_ds_jdbc_version() {
 
 main() {
   set -euo pipefail
-  source_helper_script
   case "$OPERATION" in
     configure)
       # Runs during installation/upgrade after files have been unpacked
+      source_helper_script
       local version="${2}"
       if [ "${version}" = "1.5.3" ]; then
         # Runs only on update of package 1.5.3
