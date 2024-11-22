@@ -211,7 +211,7 @@ prepare_management_scripts_and_files() {
 
   # Replace placeholders
   sed -e "s|__PACKAGE_NAME__|${PACKAGE_NAME}|g" -e "s|__PACKAGE_VERSION__|${PACKAGE_VERSION}|g" "${DIR_CURRENT}/control" > "${DIR_BUILD}/DEBIAN/control"
-  sed -e "s|__TRIGGER_PREFIX__|${TRIGGER_PREFIX}|g" "${DIR_CURRENT}/postinst" > "${DIR_BUILD}/DEBIAN/postinst"
+  sed -e "s|__TRIGGER_PREFIX__|${TRIGGER_PREFIX}|g" -e "s|__POSTGRES_JDBC_VERSION__|${POSTGRES_JDBC_VERSION}|g" "${DIR_CURRENT}/postinst" > "${DIR_BUILD}/DEBIAN/postinst"
   sed -e "/^__I2B2_DROP_STATEMENT__/{r ${DIR_RESOURCES}/sql/i2b2_drop.sql" -e "d;}" "${DIR_CURRENT}/postrm" > "${DIR_BUILD}/DEBIAN/postrm"
 
   # Copy necessary scripts
