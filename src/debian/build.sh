@@ -17,9 +17,9 @@ CLEANUP=false
 SKIP_BUILD=false
 
 usage() {
-  echo "Usage: $0 [--cleanup] [--skip-build]" >&2
+  echo "Usage: $0 [--cleanup] [--skip-deb-build]" >&2
   echo "  --cleanup          Optional: Remove build directory after package creation" >&2
-  echo "  --skip-build       Optional: Skip the package build step" >&2
+  echo "  --skip-deb-build   Optional: Skip the debian package build step" >&2
   exit 1
 }
 
@@ -29,7 +29,7 @@ while [[ $# -gt 0 ]]; do
       CLEANUP=true
       shift
       ;;
-    --skip-build)
+    --skip-deb-build)
       SKIP_BUILD=true
       shift
       ;;
