@@ -143,20 +143,23 @@ update_aktin_ds_jdbc_version() {
   return 0
 }
 
+handle_version_specific_updates() {
+  local version="${1}"
+  if [ "${version}" = "1.5.3" ]; then
+    stop_service "wildfly"
+    cleanup_wildfly_deployment_markers
+    remove_datasource_files "" "crc-ds" "im-ds" "ont-ds" "pm-ds" "work-ds"
+    update_aktin_ds_jdbc_version "" "__POSTGRES_JDBC_VERSION__"
+  fi
+}
+
 main() {
   set -euo pipefail
   case "$OPERATION" in
     configure)
       # Runs during installation/upgrade after files have been unpacked
       source_helper_script
-      local version="${2}"
-      # Version-specific updates
-      if [ "${version}" = "1.5.3" ]; then
-        stop_service "wildfly"
-        cleanup_wildfly_deployment_markers
-        remove_datasource_files "" "crc-ds" "im-ds" "ont-ds" "pm-ds" "work-ds"
-        update_aktin_ds_jdbc_version "" "__POSTGRES_JDBC_VERSION__"
-      fi
+      handle_version_specific_updates "${2}"
       systemctl enable apache2
       check_and_start_service "apache2"
       activate_php_curl_extension
