@@ -7,29 +7,24 @@
 # Purpose:      Prepares the system before package files are removed by stopping services, backing up user data, and cleaning runtime artifacts.
 #--------------------------------------
 
-log_info() { echo -e "\033[0;34m[INFO]\033[0m $1"; }
-log_success() { echo -e "\033[0;32m[SUCCESS]\033[0m $1"; }
-log_warn() { echo -e "\033[1;33m[WARN]\033[0m $1"; }
-log_error() { echo -e "\033[0;31m[ERROR]\033[0m $1" >&2; }
-
 readonly OPERATION="${1}"
 
 source_helper_script() {
   local helper_path="/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/helper.sh"
-  log_info "Loading helper script..."
+  echo -e "\033[0;34m[INFO]\033[0m Loading helper script..."
   if [[ ! -f "${helper_path}" ]]; then
-    log_error "helper.sh not found at ${helper_path}"
+    echo -e "\033[0;31m[ERROR]\033[0m helper.sh not found at ${helper_path}" >&2
     exit 1
   fi
   . "${helper_path}"
-  log_success "Helper script loaded"
+  echo -e "\033[0;32m[SUCCESS]\033[0m Helper script loaded"
 }
 
 # Creates temporary helper.sh in /tmp/ as helper.sh would be deleted before postrm and is required for database connection
 create_temp_helper() {
-  log_info "Creating temporary helper script..."
   local helper_src="/usr/share/${DPKG_MAINTSCRIPT_PACKAGE}/helper.sh"
   local helper_dest="/tmp/${DPKG_MAINTSCRIPT_PACKAGE}_helper.sh"
+  log_info "Creating temporary helper script..."
 
   if [[ -f "${helper_dest}" ]]; then
     log_info "helper.sh already existing at ${helper_dest}"
