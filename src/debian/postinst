@@ -22,12 +22,13 @@ source_helper_script() {
 
 activate_php_curl_extension() {
   log_info "Configuring PHP curl extension..."
-  if ! grep -q "^extension=curl" /etc/php/*/apache2/php.ini; then
-    sed -i "s/;extension=curl/extension=curl/" /etc/php/*/apache2/php.ini
-    systemctl restart apache2
-    log_success "PHP curl extension activated"
+  local active_php=$(php -v | head -n1 | cut -d' ' -f2 | cut -d'.' -f1,2)
+  if ! grep -q "^extension=curl" /etc/php/${active_php}/apache2/php.ini; then
+      sed -i "s/;extension=curl/extension=curl/" /etc/php/${active_php}/apache2/php.ini
+      systemctl restart apache2
+      log_success "PHP curl extension activated"
   else
-    log_info "PHP curl extension already active"
+      log_info "PHP curl extension already active"
   fi
 }
 
@@ -143,6 +144,19 @@ update_aktin_ds_jdbc_version() {
   return 0
 }
 
+check_and_sync_apache_php_version() {
+   active_php=$(php -v | head -n1 | cut -d' ' -f2 | cut -d'.' -f1,2)
+   apache_php=$(ls -l /etc/apache2/mods-enabled/php*.load | grep -o '[0-9]\.[0-9]' | head -n1)
+   if [ "$active_php" != "$apache_php" ]; then
+       a2dismod php$apache_php
+       a2enmod php$active_php
+       systemctl restart apache2
+       echo "Apache PHP updated from $apache_php to $active_php"
+   else
+       echo "Apache already using PHP $active_php"
+   fi
+}
+
 handle_version_specific_updates() {
   local version="${1}"
   if [ "${version}" = "1.5.3" ]; then
@@ -150,6 +164,7 @@ handle_version_specific_updates() {
     cleanup_wildfly_deployment_markers
     remove_datasource_files "" "crc-ds" "im-ds" "ont-ds" "pm-ds" "work-ds"
     update_aktin_ds_jdbc_version "" "__POSTGRES_JDBC_VERSION__"
+    check_and_sync_apache_php_version
   fi
 }
 
