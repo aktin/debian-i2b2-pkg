@@ -69,14 +69,15 @@ check_and_start_service() {
       return 0
     fi
 
-     if ((attempt == MAX_RETRIES)); then
-      log_error "Failed to start service ${service} after ${timeout} seconds"
-      log_error "Service status:"
-      systemctl status "${service}" >&2
-      return 1
-    fi
-
     log_warn "Service not started. Retry ${attempt}/${MAX_RETRIES} in ${RETRY_INTERVAL}s"
+
+    if ((attempt == MAX_RETRIES)); then
+      log_warn "Failed to start service ${service} after ${timeout} seconds"
+      log_warn "Service status:"
+      systemctl status "${service}" >&2
+      return 0
+    fi
+    ((attempt++))
   done
 }
 
@@ -101,7 +102,12 @@ stop_service() {
     ((wait_time++))
   done
 
-  log_success "Service ${service} stopped successfully"
+  if systemctl is-active --quiet "${service}"; then
+    log_warn "Service ${service} could not be stopped completely"
+  else
+    log_success "Service ${service} stopped successfully"
+  fi
+  return 0
 }
 
 cleanup_wildfly_deployment_markers() {
@@ -147,8 +153,7 @@ remove_datasource_files() {
       if rm -f "${ds_file}"; then
         log_success "Removed datasource file: ${ds}.xml"
       else
-        log_error "Failed to remove datasource file: ${ds}.xml"
-        return 1
+        log_warn "Failed to remove datasource file: ${ds}.xml"
       fi
     else
       log_warn "Datasource file not found: ${ds}.xml"
