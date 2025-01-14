@@ -1,0 +1,38 @@
+name: CI/CD Release Candidate
+
+on:
+  push:
+    tags:
+      - v[0-9]+.[0-9]+**
+
+jobs:
+  build:
+    uses: aktin/aktin-github-scripts/.github/workflows/debian-build.yml@main
+    with:
+      package-name: 'aktin-notaufnahme-i2b2'
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: 'debian-package'
+
+      - name: Install
+        run: |
+          sudo apt install -y openjdk-11-jre-headless
+          sudo apt install -y "build/aktin-notaufnahme-i2b2_${{ needs.build.outputs.package-version }}.deb"
+          sudo service wildfly restart
+
+  #      - name: Test
+  #        run:  # TODO
+
+  deploy:
+    needs: [ build, test ]
+    uses: aktin/aktin-github-scripts/.github/workflows/debian-deploy.yml@main
+    with:
+      package-name: 'aktin-notaufnahme-i2b2'
+      package-version: ${{ needs.build.outputs.package-version }}
+      codename: 'unstable'
