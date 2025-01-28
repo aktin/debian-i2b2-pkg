@@ -17,4 +17,4 @@ jobs:
     with:
       package-name: 'aktin-notaufnahme-i2b2'
       package-version: ${{ needs.build.outputs.package-version }}
-      codename: 'unstable'
+      codename: 'jammy-testing'
