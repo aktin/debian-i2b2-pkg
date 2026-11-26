@@ -61,6 +61,17 @@ set -a
 set +a
 readonly DIR_BUILD="${DIR_SRC}/build/${PACKAGE_NAME}_${PACKAGE_VERSION}"
 
+# WildFly 22 requires Java 11. Newer JDKs (24+) break jboss-cli.sh. Checks the same java that jboss-cli.sh uses.
+check_java_version() {
+  local java_bin="${JAVA_HOME:+${JAVA_HOME}/bin/}java"
+  local java_version
+  java_version="$("${java_bin}" -XshowSettings:properties -version 2>&1 | awk -F' = ' '/java.specification.version/ {print $2}')"
+  if [[ "${java_version}" != "11" ]]; then
+    echo "Error: Java 11 required for WildFly ${WILDFLY_VERSION}, found '${java_version}' (${java_bin}). Set JAVA_HOME to a Java 11 JDK." >&2
+    exit 1
+  fi
+}
+
 clean_up_build_environment() {
   echo "Cleaning up previous build environment..."
   rm -rf "${DIR_BUILD}"
@@ -182,7 +193,7 @@ download_and_copy_i2b2_war() {
  if [[ -f "${DIR_DOWNLOADS}/i2b2.war" ]]; then
     echo "Using cached i2b2 WAR"
   else
-    wget "https://www.aktin.org/software/repo/org/i2b2/${I2B2_VERSION}/i2b2.war" -P "${DIR_DOWNLOADS}"
+    wget "https://www.na-register.de/software/repo/org/i2b2/${I2B2_VERSION}/i2b2.war" -P "${DIR_DOWNLOADS}"
   fi
 
   cp "${DIR_DOWNLOADS}/i2b2.war" "${DIR_BUILD}${dir_wildfly_deployments}"
@@ -233,6 +244,7 @@ build_package() {
 
 main() {
   set -euo pipefail
+  check_java_version
   clean_up_build_environment
   init_build_environment
   download_and_extract_i2b2_webclient "/var/www/html/webclient"
