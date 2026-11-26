@@ -193,7 +193,7 @@ download_and_copy_i2b2_war() {
  if [[ -f "${DIR_DOWNLOADS}/i2b2.war" ]]; then
     echo "Using cached i2b2 WAR"
   else
-    wget "https://www.aktin.org/software/repo/org/i2b2/${I2B2_VERSION}/i2b2.war" -P "${DIR_DOWNLOADS}"
+    wget "https://www.na-register.de/software/repo/org/i2b2/${I2B2_VERSION}/i2b2.war" -P "${DIR_DOWNLOADS}"
   fi
 
   cp "${DIR_DOWNLOADS}/i2b2.war" "${DIR_BUILD}${dir_wildfly_deployments}"
